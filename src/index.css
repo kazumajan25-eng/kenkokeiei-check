@@ -1,0 +1,17 @@
+/* 全体の最小リセット（App側でインラインスタイルを使用しているため最低限のみ） */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
