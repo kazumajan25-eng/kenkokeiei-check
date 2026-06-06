@@ -1,0 +1,252 @@
+# 引き継ぎドキュメント (Handoff)
+
+> このドキュメントは、本プロジェクトを別のAIアシスタント（Codex / ChatGPT / GitHub Copilot 等）に引き継ぐためのものです。
+> このファイルを **必ず最初に読んで** から作業してください。
+
+---
+
+## 1. プロジェクト概要
+
+| 項目 | 内容 |
+|---|---|
+| 名前 | kenkokeiei-check |
+| 目的 | 健康経営優良法人2026 認定取得サポートサイト |
+| 想定運営 | 株式会社フロム・シェフ |
+| 利用者 | 認定取得を目指す企業の担当者 |
+| 機能 | (1) 認定企業の取り組み事例検索 (2) 自社のセルフチェック |
+| ホスティング | Vercel（設定済・未デプロイ） |
+| リポジトリ | https://github.com/kazumajan25-eng/kenkokeiei-check |
+
+---
+
+## 2. 技術スタック
+
+- **Vite 8 + React 19**（JavaScript、TypeScriptは未使用）
+- 状態管理: React の `useState` のみ（Redux/Zustand等の外部ライブラリなし）
+- スタイル: **インラインstyle**（CSS Modules / styled-components 等は未使用）
+- データ: 静的JSファイル（`src/data/categories.js`, `src/data/cases.js`）
+- バックエンドなし（Supabase等はPhase 2で導入予定）
+- Node.js: v24.x で動作確認済み
+
+---
+
+## 3. ファイル構成
+
+```
+kenkokeiei-check/
+├── HANDOFF.md              # 本ファイル
+├── README.md
+├── package.json
+├── vite.config.js
+├── vercel.json             # Vercel設定（SPA向けrewrite含む）
+├── index.html              # title・description設定済み
+└── src/
+    ├── App.jsx             # タブ切替の親コンポーネント
+    ├── main.jsx
+    ├── index.css           # 最小限のリセットのみ
+    ├── data/
+    │   ├── categories.js   # 公式評価項目データ（29項目）
+    │   └── cases.js        # 認定企業の取り組み事例（27社）
+    └── components/
+        ├── Header.jsx      # 共通ヘッダー（タブ切替）
+        ├── Footer.jsx      # 共通フッター（CTA）
+        ├── SelfCheck.jsx   # セルフチェック画面
+        └── CaseSearch.jsx  # 事例検索画面
+```
+
+---
+
+## 4. 主要な設計判断（Decision Log）
+
+### 4-1. 評価項目は経産省公式に準拠
+- 大項目5つ × 評価項目28（公式）+ 1（独自）= **全29項目**
+- 出所: 経済産業省「健康経営優良法人2026 認定要件」
+  https://www.meti.go.jp/policy/mono_info_service/healthcare/kenkoukeiei_yuryouhouzin.html
+- **項目4-2「健康白書の作成・公開」だけは弊社独自の推奨項目** （公式の評価項目ではない）
+
+### 4-2. フロム・シェフ対応可項目は12項目に厳選
+ユーザー（フロム・シェフ）の指定により以下の12項目のみ `canSupport: true`:
+
+| ID | 評価項目 | サービス名 |
+|---|---|---|
+| 1-1 | 健康経営の方針等の社内外への発信 | 健康宣言の作成・発信支援・健康白書作成サポート |
+| 2-2 | 経営レベル会議での議題・決定 | 業務サポート |
+| 3-5 | 教育機会の設定 | 各種研修を実施 |
+| 3-6 | 働き方・両立支援 | 各種研修実施やアンケート調査でサポート |
+| 3-8 | がん等両立支援 | 業務サポート |
+| 3-9 | 女性の健康 | 女性の健康に関する研修を実施 |
+| 3-12 | 食生活改善 | 業務サポート |
+| 3-13 | 運動機会増進 | 各種研修や体力測定を実施 |
+| 3-15 | 心の健康 | 睡眠とメンタルヘルスの研修を実施 |
+| 3-17 | 喫煙率低下 | 喫煙率減少のための研修を実施 |
+| 4-1 | 効果検証 | 効果検証・健康白書作成を実施 |
+| 4-2 | 健康白書の作成・公開（推奨） | 健康白書作成サポート |
+
+⚠️ **`canSupport` の追加/削除はユーザー（フロム・シェフ）に確認なしに変更しないこと**
+
+### 4-3. データ管理方針
+- 事例データは `.js` ファイルで手動管理（現Phase 1）
+- Phase 2 で Supabase 導入予定（管理画面で事例追加可能に）
+- 各事例には必ず `sourceUrl` と `sourceName` を含めること（著作権・出典明示のため）
+
+### 4-4. スタイル方針
+- インラインstyleで統一（CSS Modulesやstyled-componentsへの移行はユーザー要望時のみ）
+- 配色は categories.js の `color` プロパティを各カテゴリで使用
+- 日本語フォント: `Hiragino Kaku Gothic ProN`, `Meiryo` (App.jsx で指定)
+
+### 4-5. CONTACT_URL は仮値
+- 現状: `mailto:info@example.com`
+- 場所: `src/components/Footer.jsx` で定義、SelfCheck/CaseSearchが import
+- **本番公開前に実際の問い合わせ先メールに変更必須**
+
+---
+
+## 5. データソース（事例27社）
+
+| # | 会社 | 業種 | URL |
+|---|---|---|---|
+| 1 | 大同特殊鋼 | 特殊鋼製造 | daido.co.jp |
+| 2 | 大王製紙 | 製紙 | daio-paper.co.jp |
+| 3 | SUMCO | 半導体 | sumcosi.com |
+| 4 | 正興電機製作所 | 電機 | seiko-denki.co.jp |
+| 5 | DNP | 印刷・情報通信 | global.dnp |
+| 6 | 双日 | 総合商社 | sojitz.com |
+| 7 | 丸井グループ | 小売・FinTech | 0101maruigroup.co.jp |
+| 8 | コーナン商事 | HC | hc-kohnan.com |
+| 9 | SCSK | IT | scsk.jp |
+| 10 | 花王 | 化学・日用品 | kao.com |
+| 11 | ロート製薬 | 製薬 | rohto.co.jp |
+| 12 | キリンHD | 飲料 | kirinholdings.com |
+| 13 | SOMPO HD | 保険 | sompo-hd.com |
+| 14 | TOTO | 住宅設備 | jp.toto.com |
+| 15 | H.U.グループ | 医療検査 | hugp.com |
+| 16 | 大東建託パートナーズ | 不動産 | kentaku-partners.co.jp |
+| 17 | 第一工業製薬 | 化学 | dks-web.co.jp |
+| 18 | 古野電気 | 舶用機器 | furuno.co.jp |
+| 19 | 清原 | 服飾資材 | kiyohara.co.jp |
+| 20 | 日本国土開発 | 建設 | n-kokudo.co.jp |
+| 21 | ニッタ | 製造 | nittagroup.com |
+| 22 | タニタ | 健康機器 | tanita.co.jp |
+| 23 | トーエネック | 設備工事 | toenec.co.jp |
+| 24 | 高舘組 | 建設 | takadategumi.co.jp |
+| 25 | 太陽工業 | 膜構造 | taiyokogyo.co.jp |
+| 26 | リーフワークス | IT | leafworks.jp |
+| 27 | 京応 | 保険代理・Web | keio-web.com |
+
+---
+
+## 6. 完了済み（Done）
+
+- [x] Viteプロジェクト雛形
+- [x] タブUI（事例検索／セルフチェック）
+- [x] 公式29評価項目の構造化（categories.js）
+- [x] 27社の事例データ収集・評価項目IDへのマッピング
+- [x] 事例検索UI（業種フィルタ・評価項目絞り込み・フロム・シェフ対応可絞り込み・テキスト検索）
+- [x] セルフチェックUI（29項目対応、結果画面のCTA、進捗バー）
+- [x] 共通フッターCTA
+- [x] フロム・シェフ対応可項目を12項目に整理
+- [x] 健康白書の作成・公開（4-2）を独自項目として追加
+- [x] vercel.json（SPA rewrite）
+- [x] GitHub リポジトリ作成・push（初回コミット）
+
+---
+
+## 7. TODO（未完了 / 優先度順）
+
+### 🔴 短期（Phase 1完成までに）
+
+- [ ] **CONTACT_URL を実運用のメールアドレスに変更** （Footer.jsx）
+- [ ] **Vercel本番デプロイ** （GitHub連携 or CLI）
+- [ ] サントリー・ANA など取得失敗企業の手動追加（テキストを手で入力）
+- [ ] 花王・ロート製薬の事例データ補完（initiatives が薄い）
+- [ ] モバイル表示の細かい確認・調整
+- [ ] OGP画像（SNSシェア時の見た目）
+- [ ] favicon を適切なものに変更
+
+### 🟡 中期（Phase 2）
+
+- [ ] **Supabase導入**（事例DB化・管理画面）
+- [ ] 事例数を50〜100社に拡大
+- [ ] セルフチェック結果の保存機能（メール送信 or URL共有）
+- [ ] 業種フィルタの複数選択化
+- [ ] カテゴリ別スコアのレーダーチャート表示
+
+### 🟢 長期（Phase 3）
+
+- [ ] 健康白書のテンプレ自動生成
+- [ ] PDF出力（セルフチェック結果・サポート可項目レポート）
+- [ ] フロム・シェフ社内のCRM連携
+- [ ] アクセス解析（よく検索される項目の可視化）
+
+---
+
+## 8. 既知の問題・注意点
+
+- **サントリー公式サイトは bot 拒否（HTTP 403）** で WebFetch 不可
+- **経産省の事例集PDF**（meigara2024_report.pdf, jirei2025.pdf）は WebFetch でテキスト抽出不可
+  - 解決策: ローカルにダウンロード→poppler-utils 等で処理、または手動抽出
+- 花王・ロート製薬は概要ページしか取れず、initiatives が他社より薄い
+- 中項目「3- 中項目」は categories.js では item の `midCategory` フィールドで持っているが、UIでは subCategoryと連結して小さく表示する程度（強調表示はしていない）
+
+---
+
+## 9. ローカル起動・ビルド・デプロイ
+
+```bash
+# 初回のみ
+cd ~/Desktop/kenkokeiei-check
+npm install
+
+# 開発サーバ起動 (http://localhost:5173)
+npm run dev
+
+# 本番ビルド確認
+npm run build
+
+# Vercel CLI でデプロイ（GitHubから自動デプロイ推奨）
+npx vercel        # プレビュー
+npx vercel --prod # 本番
+```
+
+---
+
+## 10. Codex/ChatGPT/Copilot への引き継ぎプロンプト例
+
+以下のテキストを引き継ぎ先のAIに最初に渡してください:
+
+```
+このリポジトリは健康経営優良法人2026の認定サポートサイトです。
+Vite + React (JavaScript) で構築されており、TypeScriptは未使用です。
+
+GitHub: https://github.com/kazumajan25-eng/kenkokeiei-check
+
+作業を始める前に、必ずリポジトリ直下の HANDOFF.md を熟読してください。
+特に以下に注意してください:
+
+1. 評価項目 (src/data/categories.js) は経産省公式に準拠している
+   - ただし「4-2 健康白書の作成・公開」だけは弊社独自の追加項目
+   - canSupport フィールドの値はユーザー（フロム・シェフ）が厳密に定義済み
+     勝手に true/false を変更しないこと
+
+2. 事例データ (src/data/cases.js) は各企業の公式サイトを出典としており、
+   各事例に sourceUrl と sourceName を必ず含めること（出典明示）
+
+3. CONTACT_URL は仮の値（info@example.com）で本番公開前に要変更
+
+4. スタイルはインラインstyleで統一されている。CSS Modulesや
+   styled-componentsへの移行はユーザー要望時のみ
+
+5. ユーザーは非エンジニアです。専門用語を避け日本語でわかりやすく
+   説明してください。返答も日本語でお願いします。
+
+今回の依頼内容: 【ここに依頼内容を書く】
+```
+
+---
+
+## 11. 過去の作業ログ（参考）
+
+- 初期構想: 当初はセルフチェック単体だったが、ユーザー判断で
+  「事例検索DBをメインに、セルフチェックは別タブ」の構成に変更
+- データ収集: ユーザー提供の26URLから27社抽出（うちサントリーとANAは取得失敗）
+- フロム・シェフ対応可マッピング: 当初はclaudeが推定で設定 → ユーザー指定により12項目に再整理
