@@ -1,92 +1,110 @@
 // ============================================================
-// 共通ヘッダー（タブ切替 + サイトタイトル）
+// 共通ヘッダー（サイトタイトル + 運営者表記 + アンダーライン式タブ）
 // ============================================================
+
+import { IconSearch, IconClipboard, IconExternalLink } from "./icons.jsx";
+
+const TABS = [
+  { id: "cases", label: "事例を探す", Icon: IconSearch },
+  { id: "selfcheck", label: "セルフチェック", Icon: IconClipboard },
+];
 
 export default function Header({ activeTab, setActiveTab }) {
   return (
     <div
       style={{
-        background: "linear-gradient(135deg,#1A3A5C,#2563EB)",
-        padding: "16px 20px",
+        background: "var(--navy-900)",
         position: "sticky",
         top: 0,
         zIndex: 20,
-        boxShadow: "0 2px 8px rgba(0,0,0,.08)",
+        boxShadow: "0 2px 12px rgba(10, 20, 40, 0.3)",
       }}
     >
       <div
         style={{
           maxWidth: 1100,
           margin: "0 auto",
+          padding: "14px 20px 0",
           display: "flex",
-          alignItems: "center",
-          gap: 12,
+          alignItems: "flex-end",
           justifyContent: "space-between",
+          gap: 16,
           flexWrap: "wrap",
         }}
       >
-        {/* ロゴ・タイトル */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 26 }}>🏆</span>
-          <div>
-            <div
-              style={{
-                fontSize: 9,
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                color: "rgba(255,255,255,.65)",
-              }}
-            >
-              健康経営優良法人2026
-            </div>
-            <h1
-              style={{
-                margin: 0,
-                fontSize: 17,
-                fontWeight: 800,
-                color: "#fff",
-                letterSpacing: ".02em",
-              }}
-            >
-              認定サポートサイト
-            </h1>
+        {/* タイトル + 運営者 */}
+        <div style={{ paddingBottom: 12 }}>
+          <div
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: "0.14em",
+              color: "rgba(255,255,255,.55)",
+            }}
+          >
+            健康経営優良法人2026
           </div>
+          <h1
+            style={{
+              margin: "1px 0 2px",
+              fontSize: 18,
+              fontWeight: 800,
+              color: "#fff",
+              letterSpacing: "0.02em",
+              lineHeight: 1.4,
+            }}
+          >
+            認定サポートサイト
+          </h1>
+          <a
+            href="https://fromsheff.jp/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              fontSize: 11,
+              color: "rgba(255,255,255,.55)",
+              textDecoration: "none",
+            }}
+          >
+            運営：フロム・シェフ株式会社
+            <IconExternalLink size={10} />
+          </a>
         </div>
 
-        {/* タブ */}
-        <div
-          style={{
-            display: "flex",
-            gap: 4,
-            background: "rgba(255,255,255,.12)",
-            padding: 4,
-            borderRadius: 10,
-          }}
-        >
-          {[
-            { id: "cases", label: "🔍 事例を探す" },
-            { id: "selfcheck", label: "✅ セルフチェック" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              style={{
-                padding: "8px 14px",
-                fontSize: 13,
-                fontWeight: 700,
-                border: "none",
-                borderRadius: 8,
-                cursor: "pointer",
-                background: activeTab === tab.id ? "#fff" : "transparent",
-                color: activeTab === tab.id ? "#1A3A5C" : "#fff",
-                transition: "all .2s",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        {/* アンダーライン式タブ */}
+        <nav style={{ display: "flex", gap: 4 }}>
+          {TABS.map(({ id, label, Icon }) => {
+            const active = activeTab === id;
+            return (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 7,
+                  padding: "12px 14px",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  background: "transparent",
+                  border: "none",
+                  borderBottom: active
+                    ? "3px solid var(--teal-300)"
+                    : "3px solid transparent",
+                  color: active ? "#fff" : "rgba(255,255,255,.65)",
+                  transition: "color .15s, border-color .15s",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <Icon size={15} />
+                {label}
+              </button>
+            );
+          })}
+        </nav>
       </div>
     </div>
   );

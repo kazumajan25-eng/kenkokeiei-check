@@ -1,12 +1,13 @@
-# 健康経営優良法人2026 認定セルフチェック
+# 健康経営優良法人2026 認定サポートサイト
 
-経済産業省の「健康経営優良法人認定制度」の評価項目に基づき、自社の取り組み状況をセルフチェックできるWebアプリです。
+経済産業省の「健康経営優良法人認定制度」の評価項目に基づき、
+認定企業の取り組み事例検索と、自社のセルフチェックができるWebアプリです。
 
 ## 技術スタック
 
 - React 19
 - Vite 8
-- デプロイ先: Vercel
+- デプロイ先: Cloudflare Pages（移行準備中）
 
 ## ローカルでの動かし方
 
@@ -24,37 +25,39 @@ npm run build
 npm run preview
 ```
 
-## Vercelへのデプロイ手順
+## Cloudflare Pages へのデプロイ手順
 
 ### 方法1: GitHub経由（おすすめ）
 
-1. このフォルダをGitHubのリポジトリにアップロード
-2. [Vercel](https://vercel.com/) にログインし「Add New Project」
-3. 上記リポジトリを選択して「Deploy」を押すだけ
-   - フレームワークは自動で「Vite」と認識されます
+1. [Cloudflare Dashboard](https://dash.cloudflare.com/) にログインします
+2. 「Workers & Pages」→「Create application」→「Pages」を開きます
+3. 「Connect to Git」で GitHub と連携します
+4. リポジトリ `kazumajan25-eng/kenkokeiei-check` を選びます
+5. ビルド設定を入力します
+   - Framework preset: `Vite`
+   - Build command: `npm run build`
+   - Build output directory: `dist`
+6. 「Save and Deploy」で公開します
 
-### 方法2: Vercel CLI を使う場合
+### 独自ドメインを使う場合
 
-```bash
-# 初回のみVercel CLIをインストール
-npm install -g vercel
-
-# このフォルダ内で実行
-vercel        # 初回はプレビューデプロイ
-vercel --prod # 本番公開
-```
+1. Cloudflare Pages の `Settings` → `Custom domains` を開きます
+2. 利用するドメインを入力します
+3. DNS設定を Cloudflare の案内どおりに変更します
+4. SSL は自動で設定されます
 
 ## ファイル構成のポイント
 
-- `src/App.jsx` ... 画面の本体（セルフチェックのロジックと表示）
+- `src/App.jsx` ... タブ切替の親コンポーネント（URLハッシュ連動）
 - `src/main.jsx` ... Reactの起動エントリ
-- `src/index.css` ... 最低限のリセットCSSのみ
-- `vercel.json` ... Vercel向けの設定（SPAのリロード対応）
+- `src/index.css` ... デザイントークンと全体スタイル
+- `src/components/icons.jsx` ... UIで使うSVGアイコン
+- `public/_redirects` ... Cloudflare Pages 向けのSPAリダイレクト設定
 
 ## カスタマイズ箇所
 
-`src/App.jsx` 内の以下の定数を、実際の用途に合わせて変更してください。
+問い合わせ先メールは `src/components/Footer.jsx` の以下で管理しています。
 
 ```js
-const CONTACT_URL = "mailto:info@example.com"; // 問い合わせ先メールアドレス
+const CONTACT_URL = "mailto:k.aoi@fromsheff-howsports.co.jp";
 ```

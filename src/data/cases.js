@@ -1202,3 +1202,53 @@ export function getSupportableInitiatives(caseData, supportableItemIds) {
     supportableItemIds.includes(init.itemId)
   );
 }
+
+// ============================================================
+// 業種の大分類（検索フィルタ用）
+// ※ 各事例の industry（詳細業種）は変更せず、検索用の大分類を
+//   ここで別途定義する。事例カード内には詳細業種を表示する。
+// ============================================================
+
+export const INDUSTRY_CATEGORIES = [
+  "製造",
+  "建設・設備",
+  "IT・通信",
+  "商社・小売",
+  "金融・保険",
+  "医療・ヘルスケア",
+];
+
+export const INDUSTRY_CATEGORY_BY_CASE = {
+  "case-daido": "製造",
+  "case-daiopaper": "製造",
+  "case-sumco": "製造",
+  "case-seikodenki": "製造",
+  "case-dnp": "製造",
+  "case-sojitz": "商社・小売",
+  "case-marui": "商社・小売",
+  "case-kohnan": "商社・小売",
+  "case-scsk": "IT・通信",
+  "case-kao": "製造",
+  "case-rohto": "医療・ヘルスケア",
+  "case-kirin": "製造",
+  "case-sompo": "金融・保険",
+  "case-toto": "製造",
+  "case-hu": "医療・ヘルスケア",
+  "case-kentaku-partners": "建設・設備",
+  "case-dks": "製造",
+  "case-furuno": "製造",
+  "case-kiyohara": "商社・小売",
+  "case-nkokudo": "建設・設備",
+  "case-nitta": "製造",
+  "case-tanita": "医療・ヘルスケア",
+  "case-toenec": "建設・設備",
+  "case-takadategumi": "建設・設備",
+  "case-taiyokogyo": "建設・設備",
+  "case-leafworks": "IT・通信",
+  "case-keio": "金融・保険",
+};
+
+// 事例の業種大分類を取得（未定義の場合は「その他」）
+export function getIndustryCategory(caseData) {
+  return INDUSTRY_CATEGORY_BY_CASE[caseData.id] || "その他";
+}

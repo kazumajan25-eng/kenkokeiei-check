@@ -1,12 +1,30 @@
 // ============================================================
 // セルフチェック画面
 // ============================================================
-// 旧 App.jsx のロジックを基に、新しい公式CATEGORIES (24項目) を使う形にリファクタ
+// - 公式評価項目（29項目）に「はい／いいえ／わからない」で回答
+// - 必須バッジは「必須（大規模法人）」と「銘柄・500必須」を区別
+// - 未回答がある状態で結果に進もうとすると、未回答項目へ案内
+// - 結果画面はドーナツグラフで充足率を表示
 // ============================================================
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { CATEGORIES } from "../data/categories.js";
 import { CONTACT_URL } from "./Footer.jsx";
+import {
+  IconCheck,
+  IconX,
+  IconHelp,
+  IconClock,
+  IconList,
+  IconHandshake,
+  IconMail,
+  IconPrinter,
+  IconRefresh,
+  IconArrowRight,
+  IconInfo,
+  CATEGORY_ICONS,
+  circledNumber,
+} from "./icons.jsx";
 
 // スコア計算
 function calcScore(answers) {
@@ -21,30 +39,95 @@ function calcScore(answers) {
         (answers[item.id] === "no" || answers[item.id] === "unknown") &&
         item.canSupport
       ) {
-        supportNeeded.push({ ...item, catLabel: cat.label, catColor: cat.color });
+        supportNeeded.push({ ...item, catLabel: cat.label });
       }
     });
   });
   const pct = Math.round((done / total) * 100);
   const rank =
     pct >= 80
-      ? { label: "認定圏内の可能性大", color: "#16a34a", bg: "#f0fdf4", border: "#86efac" }
+      ? {
+          label: "認定圏内の可能性大",
+          color: "var(--green-600)",
+          bg: "var(--green-50)",
+          border: "#86efac",
+        }
       : pct >= 60
-      ? { label: "あと少しで認定圏内", color: "#d97706", bg: "#fffbeb", border: "#fcd34d" }
-      : { label: "取り組み強化が必要", color: "#dc2626", bg: "#fef2f2", border: "#fca5a5" };
+      ? {
+          label: "あと少しで認定圏内",
+          color: "var(--amber-700)",
+          bg: "var(--amber-50)",
+          border: "#fcd34d",
+        }
+      : {
+          label: "取り組み強化が必要",
+          color: "var(--red-600)",
+          bg: "var(--red-50)",
+          border: "#fca5a5",
+        };
   return { total, done, pct, rank, supportNeeded };
+}
+
+// 充足率ドーナツグラフ（マウント後にアニメーション）
+function Donut({ pct, color }) {
+  const C = 2 * Math.PI * 42; // 円周
+  const [offset, setOffset] = useState(C);
+  useEffect(() => {
+    const t = setTimeout(() => setOffset(C * (1 - pct / 100)), 150);
+    return () => clearTimeout(t);
+  }, [pct, C]);
+  return (
+    <svg width="120" height="120" viewBox="0 0 100 100" aria-label={`充足率${pct}%`}>
+      <circle
+        cx="50"
+        cy="50"
+        r="42"
+        fill="none"
+        stroke="var(--line-200)"
+        strokeWidth="10"
+      />
+      <circle
+        cx="50"
+        cy="50"
+        r="42"
+        fill="none"
+        stroke={color}
+        strokeWidth="10"
+        strokeLinecap="round"
+        strokeDasharray={C}
+        strokeDashoffset={offset}
+        transform="rotate(-90 50 50)"
+        style={{ transition: "stroke-dashoffset 1.1s ease" }}
+      />
+      <text
+        x="50"
+        y="50"
+        textAnchor="middle"
+        fontSize="21"
+        fontWeight="900"
+        fill={color}
+      >
+        {pct}%
+      </text>
+      <text x="50" y="64" textAnchor="middle" fontSize="8" fill="var(--ink-500)">
+        充足率
+      </text>
+    </svg>
+  );
 }
 
 export default function SelfCheck() {
   const [step, setStep] = useState("intro"); // intro | check | result
   const [catIdx, setCatIdx] = useState(0);
   const [answers, setAnswers] = useState({});
+  const [flashId, setFlashId] = useState(null);
   const resultRef = useRef(null);
 
   const allItems = CATEGORIES.flatMap((c) => c.items);
   const answeredCount = Object.keys(answers).length;
   const totalItems = allItems.length;
   const progress = Math.round((answeredCount / totalItems) * 100);
+  const unansweredCount = totalItems - answeredCount;
 
   const currentCat = CATEGORIES[catIdx];
   const isLastCat = catIdx === CATEGORIES.length - 1;
@@ -59,43 +142,66 @@ export default function SelfCheck() {
     );
   };
 
+  // 最初の未回答項目へジャンプ
+  const jumpToFirstUnanswered = () => {
+    for (let i = 0; i < CATEGORIES.length; i++) {
+      const item = CATEGORIES[i].items.find((it) => !answers[it.id]);
+      if (item) {
+        setCatIdx(i);
+        setFlashId(item.id);
+        setTimeout(() => {
+          document
+            .getElementById(`sc-item-${item.id}`)
+            ?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 80);
+        setTimeout(() => setFlashId(null), 1800);
+        return;
+      }
+    }
+  };
+
   const score = step === "result" ? calcScore(answers) : null;
 
   const btnBase = {
-    padding: "8px 18px",
-    borderRadius: 8,
+    padding: "9px 18px",
+    borderRadius: "var(--radius-btn)",
     fontSize: 13,
     fontWeight: 700,
-    cursor: "pointer",
     border: "none",
   };
 
   return (
     <div style={{ maxWidth: 780, margin: "0 auto", padding: "24px 16px 40px" }}>
-      {/* 進捗バー（チェック中のみ表示） */}
+      {/* 進捗バー（チェック中のみ） */}
       {step === "check" && (
         <div
           style={{
-            background: "#fff",
-            borderRadius: 10,
-            padding: "12px 16px",
+            background: "var(--bg-card)",
+            borderRadius: 12,
+            padding: "12px 18px",
             marginBottom: 16,
-            boxShadow: "0 2px 8px rgba(0,0,0,.04)",
+            boxShadow: "var(--shadow-card)",
           }}
         >
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-            <span style={{ fontSize: 11, fontWeight: 600, color: "#64748b" }}>
-              回答進捗
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: 6,
+            }}
+          >
+            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-500)" }}>
+              回答状況
             </span>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#1A3A5C" }}>
-              {answeredCount}/{totalItems} ({progress}%)
+            <span style={{ fontSize: 12, fontWeight: 700, color: "var(--navy-800)" }}>
+              {answeredCount} / {totalItems} 項目（{progress}%）
             </span>
           </div>
           <div
             style={{
-              height: 6,
-              background: "#e2e8f0",
-              borderRadius: 3,
+              height: 7,
+              background: "var(--line-200)",
+              borderRadius: 4,
               overflow: "hidden",
             }}
           >
@@ -103,8 +209,8 @@ export default function SelfCheck() {
               style={{
                 width: `${progress}%`,
                 height: "100%",
-                background: "#4ADE80",
-                borderRadius: 3,
+                background: "var(--teal-600)",
+                borderRadius: 4,
                 transition: "width .3s",
               }}
             />
@@ -112,16 +218,17 @@ export default function SelfCheck() {
         </div>
       )}
 
-      {/* Intro */}
+      {/* ---------------- Intro ---------------- */}
       {step === "intro" && (
         <div>
           <div
             style={{
-              background: "#fff",
-              borderRadius: 16,
-              padding: "32px 28px",
-              boxShadow: "0 2px 20px rgba(0,0,0,.07)",
-              marginBottom: 20,
+              background: "var(--bg-card)",
+              borderRadius: "var(--radius-card)",
+              padding: "32px 30px",
+              boxShadow: "var(--shadow-card)",
+              marginBottom: 16,
+              borderTop: "4px solid var(--navy-800)",
             }}
           >
             <h2
@@ -129,18 +236,20 @@ export default function SelfCheck() {
                 margin: "0 0 12px",
                 fontSize: 22,
                 fontWeight: 800,
-                color: "#1A3A5C",
+                color: "var(--navy-800)",
+                lineHeight: 1.6,
               }}
             >
-              健康経営優良法人の認定、<br />
+              健康経営優良法人の認定、
+              <br />
               御社は取得できますか？
             </h2>
             <p
               style={{
-                margin: "0 0 20px",
+                margin: "0 0 22px",
                 fontSize: 14,
-                color: "#475569",
-                lineHeight: 1.8,
+                color: "var(--ink-700)",
+                lineHeight: 1.9,
               }}
             >
               経済産業省「健康経営優良法人認定制度」の評価項目に基づき、
@@ -150,30 +259,39 @@ export default function SelfCheck() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr 1fr",
-                gap: 12,
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: 10,
                 marginBottom: 24,
               }}
             >
               {[
-                { icon: "⏱", label: "所要時間", val: "約3〜5分" },
-                { icon: "📋", label: "チェック項目", val: `${totalItems}項目` },
-                { icon: "🆓", label: "料金", val: "無料" },
-              ].map(({ icon, label, val }) => (
+                { Icon: IconClock, label: "所要時間", val: "約3〜5分" },
+                { Icon: IconList, label: "チェック項目", val: `${totalItems}項目` },
+                { Icon: IconCheck, label: "料金", val: "無料" },
+              ].map(({ Icon, label, val }) => (
                 <div
                   key={label}
                   style={{
-                    background: "#F0F4FF",
+                    background: "var(--line-100)",
                     borderRadius: 10,
-                    padding: "14px",
+                    padding: "16px 10px",
                     textAlign: "center",
                   }}
                 >
-                  <div style={{ fontSize: 22, marginBottom: 4 }}>{icon}</div>
-                  <div style={{ fontSize: 10, color: "#64748b", marginBottom: 2 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      color: "var(--navy-800)",
+                      marginBottom: 6,
+                    }}
+                  >
+                    <Icon size={20} />
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--ink-500)", marginBottom: 2 }}>
                     {label}
                   </div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: "#1A3A5C" }}>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: "var(--navy-800)" }}>
                     {val}
                   </div>
                 </div>
@@ -184,24 +302,29 @@ export default function SelfCheck() {
               style={{
                 ...btnBase,
                 width: "100%",
-                padding: "14px",
-                fontSize: 16,
-                background: "#1A3A5C",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                padding: "15px",
+                fontSize: 15,
+                background: "var(--navy-800)",
                 color: "#fff",
                 borderRadius: 10,
               }}
             >
-              🚀 チェックを開始する（無料）
+              チェックを開始する（無料）
+              <IconArrowRight size={16} />
             </button>
           </div>
 
           {/* カテゴリ一覧 */}
           <div
             style={{
-              background: "#fff",
-              borderRadius: 14,
-              padding: "20px 24px",
-              boxShadow: "0 2px 14px rgba(0,0,0,.05)",
+              background: "var(--bg-card)",
+              borderRadius: "var(--radius-card)",
+              padding: "22px 26px",
+              boxShadow: "var(--shadow-card)",
             }}
           >
             <h3
@@ -209,41 +332,58 @@ export default function SelfCheck() {
                 margin: "0 0 14px",
                 fontSize: 14,
                 fontWeight: 700,
-                color: "#0f172a",
+                color: "var(--ink-900)",
               }}
             >
               チェックするカテゴリ
             </h3>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {CATEGORIES.map((cat) => (
-                <div
-                  key={cat.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    padding: "10px 12px",
-                    background: "#f8fafc",
-                    borderRadius: 8,
-                  }}
-                >
-                  <span style={{ fontSize: 18 }}>{cat.icon}</span>
-                  <div>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: cat.color }}>
-                      {cat.label}
+              {CATEGORIES.map((cat) => {
+                const CatIcon = CATEGORY_ICONS[cat.id];
+                return (
+                  <div
+                    key={cat.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: "11px 14px",
+                      background: "var(--line-100)",
+                      borderRadius: 9,
+                    }}
+                  >
+                    <span style={{ color: "var(--navy-800)", display: "flex" }}>
+                      <CatIcon size={17} />
                     </span>
-                    <span style={{ fontSize: 11, color: "#94a3b8", marginLeft: 8 }}>
-                      {cat.items.length}項目
-                    </span>
+                    <div>
+                      <span
+                        style={{
+                          fontSize: 13.5,
+                          fontWeight: 700,
+                          color: "var(--navy-800)",
+                        }}
+                      >
+                        {cat.label}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: 12,
+                          color: "var(--ink-400)",
+                          marginLeft: 8,
+                        }}
+                      >
+                        {cat.items.length}項目
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
       )}
 
-      {/* Check */}
+      {/* ---------------- Check ---------------- */}
       {step === "check" && (
         <div>
           {/* カテゴリタブ */}
@@ -258,29 +398,35 @@ export default function SelfCheck() {
           >
             {CATEGORIES.map((cat, i) => {
               const done = cat.items.every((item) => answers[item.id]);
+              const active = catIdx === i;
+              const CatIcon = CATEGORY_ICONS[cat.id];
               return (
                 <button
                   key={cat.id}
                   onClick={() => setCatIdx(i)}
                   style={{
                     ...btnBase,
-                    padding: "6px 14px",
-                    fontSize: 12,
-                    background: catIdx === i ? cat.color : "#fff",
-                    color: catIdx === i ? "#fff" : "#64748b",
-                    border: `1.5px solid ${catIdx === i ? cat.color : "#e2e8f0"}`,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "7px 14px",
+                    fontSize: 12.5,
+                    background: active ? "var(--navy-800)" : "#fff",
+                    color: active ? "#fff" : "var(--ink-500)",
+                    border: `1.5px solid ${active ? "var(--navy-800)" : "var(--line-200)"}`,
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {cat.icon} {cat.label}
+                  <CatIcon size={13} />
+                  {cat.label}
                   {done && (
                     <span
                       style={{
-                        marginLeft: 4,
-                        color: catIdx === i ? "#fff" : "#16a34a",
+                        display: "flex",
+                        color: active ? "var(--teal-300)" : "var(--teal-600)",
                       }}
                     >
-                      ✓
+                      <IconCheck size={12} />
                     </span>
                   )}
                 </button>
@@ -291,10 +437,10 @@ export default function SelfCheck() {
           {/* 現在カテゴリ */}
           <div
             style={{
-              background: "#fff",
-              borderRadius: 16,
+              background: "var(--bg-card)",
+              borderRadius: "var(--radius-card)",
               padding: "24px",
-              boxShadow: "0 2px 16px rgba(0,0,0,.06)",
+              boxShadow: "var(--shadow-card)",
               marginBottom: 16,
             }}
           >
@@ -302,193 +448,246 @@ export default function SelfCheck() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 10,
+                gap: 12,
                 marginBottom: 20,
                 paddingBottom: 16,
-                borderBottom: "1px solid #f1f5f9",
+                borderBottom: "1px solid var(--line-100)",
               }}
             >
-              <span style={{ fontSize: 26 }}>{currentCat.icon}</span>
+              <span style={{ color: "var(--navy-800)", display: "flex" }}>
+                {(() => {
+                  const CatIcon = CATEGORY_ICONS[currentCat.id];
+                  return <CatIcon size={24} />;
+                })()}
+              </span>
               <div>
                 <h2
                   style={{
                     margin: 0,
                     fontSize: 17,
                     fontWeight: 800,
-                    color: currentCat.color,
+                    color: "var(--navy-800)",
                   }}
                 >
                   {currentCat.label}
                 </h2>
-                <p style={{ margin: 0, fontSize: 11, color: "#94a3b8" }}>
+                <p style={{ margin: 0, fontSize: 12, color: "var(--ink-400)" }}>
                   {currentCat.items.length}項目 ·
                   各項目に「はい／いいえ／わからない」で回答してください
                 </p>
               </div>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              {currentCat.items.map((item) => {
-                // 必須かどうかの判定
-                const isRequired = item.requiredLarge || item.requiredWhite500;
-                return (
-                  <div
-                    key={item.id}
-                    style={{
-                      border: `1.5px solid ${
-                        answers[item.id] ? "#e2e8f0" : "#f1f5f9"
-                      }`,
-                      borderRadius: 12,
-                      padding: "16px",
-                      background:
-                        answers[item.id] === "yes"
-                          ? "#f0fdf4"
-                          : answers[item.id] === "no"
-                          ? "#fef2f2"
-                          : "#fafafa",
-                    }}
-                  >
-                    {/* 小項目 (公式表の小項目を補助情報として表示) */}
-                    {item.subCategory && (
-                      <div
-                        style={{
-                          fontSize: 10,
-                          color: "#94a3b8",
-                          marginBottom: 6,
-                          fontWeight: 600,
-                        }}
-                      >
-                        {item.midCategory && `${item.midCategory} / `}
-                        {item.subCategory}
-                      </div>
-                    )}
-
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {currentCat.items.map((item) => (
+                <div
+                  key={item.id}
+                  id={`sc-item-${item.id}`}
+                  className={flashId === item.id ? "flash" : undefined}
+                  style={{
+                    border: "1.5px solid var(--line-200)",
+                    borderRadius: 12,
+                    padding: "16px 18px",
+                    background:
+                      answers[item.id] === "yes"
+                        ? "var(--green-50)"
+                        : answers[item.id] === "no"
+                        ? "var(--red-50)"
+                        : "#fff",
+                  }}
+                >
+                  {/* 小項目（補助情報） */}
+                  {item.subCategory && (
                     <div
                       style={{
-                        display: "flex",
-                        gap: 8,
-                        alignItems: "flex-start",
-                        marginBottom: 10,
+                        fontSize: 11,
+                        color: "var(--ink-400)",
+                        marginBottom: 6,
+                        fontWeight: 600,
                       }}
                     >
-                      {isRequired && (
-                        <span
-                          style={{
-                            background: "#dc2626",
-                            color: "#fff",
-                            fontSize: 9,
-                            fontWeight: 700,
-                            padding: "2px 6px",
-                            borderRadius: 4,
-                            flexShrink: 0,
-                            marginTop: 2,
-                          }}
-                        >
-                          必須
-                        </span>
-                      )}
-                      {item.selectableNo && (
-                        <span
-                          style={{
-                            background: "#2563EB",
-                            color: "#fff",
-                            fontSize: 9,
-                            fontWeight: 700,
-                            padding: "2px 6px",
-                            borderRadius: 4,
-                            flexShrink: 0,
-                            marginTop: 2,
-                          }}
-                        >
-                          選択{item.selectableNo}
-                        </span>
-                      )}
-                      <p
+                      {item.midCategory && `${item.midCategory} ／ `}
+                      {item.subCategory}
+                    </div>
+                  )}
+
+                  {/* バッジ + 設問 */}
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 6,
+                      alignItems: "flex-start",
+                      marginBottom: 8,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    {item.requiredLarge && (
+                      <span
                         style={{
-                          margin: 0,
-                          fontSize: 13,
-                          color: "#0f172a",
-                          fontWeight: 500,
-                          lineHeight: 1.6,
+                          background: "var(--red-600)",
+                          color: "#fff",
+                          fontSize: 10,
+                          fontWeight: 700,
+                          padding: "2px 8px",
+                          borderRadius: 4,
+                          flexShrink: 0,
+                          marginTop: 3,
                         }}
                       >
-                        {item.text}
-                      </p>
-                    </div>
-
+                        必須
+                      </span>
+                    )}
+                    {!item.requiredLarge && item.requiredWhite500 && (
+                      <span
+                        title="健康経営銘柄・ホワイト500を目指す場合に必須"
+                        style={{
+                          background: "#fff",
+                          color: "var(--navy-700)",
+                          fontSize: 10,
+                          fontWeight: 700,
+                          padding: "1px 7px",
+                          borderRadius: 4,
+                          border: "1.5px solid var(--navy-700)",
+                          flexShrink: 0,
+                          marginTop: 3,
+                        }}
+                      >
+                        銘柄・500必須
+                      </span>
+                    )}
+                    {item.selectableNo && (
+                      <span
+                        style={{
+                          background: "var(--line-100)",
+                          color: "var(--ink-500)",
+                          fontSize: 10,
+                          fontWeight: 700,
+                          padding: "2px 8px",
+                          borderRadius: 4,
+                          flexShrink: 0,
+                          marginTop: 3,
+                        }}
+                      >
+                        選択{circledNumber(item.selectableNo)}
+                      </span>
+                    )}
                     <p
                       style={{
-                        margin: "0 0 10px",
-                        fontSize: 11,
-                        color: "#64748b",
-                        lineHeight: 1.5,
+                        margin: 0,
+                        fontSize: 14,
+                        color: "var(--ink-900)",
+                        fontWeight: 600,
+                        lineHeight: 1.7,
+                        flex: 1,
+                        minWidth: 200,
                       }}
                     >
-                      💡 {item.hint}
+                      {item.text}
                     </p>
+                  </div>
 
-                    {item.canSupport && (
-                      <div
-                        style={{
-                          fontSize: 11,
-                          color: "#16a34a",
-                          marginBottom: 10,
-                          fontWeight: 600,
-                          background: "#f0fdf4",
-                          padding: "6px 10px",
-                          borderRadius: 6,
-                          display: "inline-block",
-                        }}
-                      >
-                        🤝 フロム・シェフ対応可: {item.supportLabel}
-                      </div>
-                    )}
+                  <p
+                    style={{
+                      display: "flex",
+                      gap: 6,
+                      margin: "0 0 10px",
+                      fontSize: 12,
+                      color: "var(--ink-500)",
+                      lineHeight: 1.7,
+                    }}
+                  >
+                    <span style={{ flexShrink: 0, marginTop: 3 }}>
+                      <IconInfo size={12} />
+                    </span>
+                    {item.hint}
+                  </p>
 
-                    <div style={{ display: "flex", gap: 8 }}>
-                      {[
-                        { val: "yes", label: "✅ はい", bg: "#16a34a" },
-                        { val: "no", label: "❌ いいえ", bg: "#dc2626" },
-                        { val: "unknown", label: "❓ わからない", bg: "#94a3b8" },
-                      ].map(({ val, label, bg }) => (
+                  {item.canSupport && (
+                    <div
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        fontSize: 12,
+                        color: "var(--teal-700)",
+                        marginBottom: 12,
+                        fontWeight: 700,
+                        background: "var(--teal-50)",
+                        padding: "5px 12px",
+                        borderRadius: 7,
+                      }}
+                    >
+                      <IconHandshake size={13} />
+                      フロム・シェフ対応可: {item.supportLabel}
+                    </div>
+                  )}
+
+                  {/* 回答ボタン */}
+                  <div style={{ display: "flex", gap: 8 }}>
+                    {[
+                      {
+                        val: "yes",
+                        label: "はい",
+                        Icon: IconCheck,
+                        bg: "var(--teal-600)",
+                      },
+                      {
+                        val: "no",
+                        label: "いいえ",
+                        Icon: IconX,
+                        bg: "var(--red-600)",
+                      },
+                      {
+                        val: "unknown",
+                        label: "わからない",
+                        Icon: IconHelp,
+                        bg: "var(--ink-500)",
+                      },
+                    ].map(({ val, label, Icon, bg }) => {
+                      const selected = answers[item.id] === val;
+                      return (
                         <button
                           key={val}
                           onClick={() => answer(item.id, val)}
                           style={{
                             ...btnBase,
                             flex: 1,
-                            padding: "8px 4px",
-                            fontSize: 12,
-                            background:
-                              answers[item.id] === val ? bg : "#f1f5f9",
-                            color:
-                              answers[item.id] === val ? "#fff" : "#64748b",
-                            border:
-                              answers[item.id] === val
-                                ? `2px solid ${bg}`
-                                : "2px solid #e2e8f0",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: 6,
+                            padding: "9px 4px",
+                            fontSize: 13,
+                            background: selected ? bg : "#fff",
+                            color: selected ? "#fff" : "var(--ink-500)",
+                            border: selected
+                              ? `2px solid ${bg}`
+                              : "2px solid var(--line-200)",
                           }}
                         >
+                          <Icon size={13} />
                           {label}
                         </button>
-                      ))}
-                    </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           </div>
 
           {/* ナビボタン */}
-          <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             {catIdx > 0 && (
               <button
                 onClick={() => setCatIdx((c) => c - 1)}
                 style={{
                   ...btnBase,
                   flex: 1,
+                  minWidth: 140,
                   background: "#fff",
-                  color: "#1A3A5C",
-                  border: "2px solid #1A3A5C",
+                  color: "var(--navy-800)",
+                  border: "2px solid var(--navy-800)",
                 }}
               >
                 ← 前のカテゴリ
@@ -500,11 +699,26 @@ export default function SelfCheck() {
                 style={{
                   ...btnBase,
                   flex: 1,
-                  background: currentCat.color,
+                  minWidth: 140,
+                  background: "var(--navy-800)",
                   color: "#fff",
                 }}
               >
                 次のカテゴリへ →
+              </button>
+            ) : unansweredCount > 0 ? (
+              <button
+                onClick={jumpToFirstUnanswered}
+                style={{
+                  ...btnBase,
+                  flex: 1,
+                  minWidth: 180,
+                  background: "var(--amber-700)",
+                  color: "#fff",
+                  padding: "12px",
+                }}
+              >
+                未回答が{unansweredCount}件あります — 回答に戻る
               </button>
             ) : (
               <button
@@ -512,19 +726,38 @@ export default function SelfCheck() {
                 style={{
                   ...btnBase,
                   flex: 1,
-                  background: "#1A3A5C",
+                  minWidth: 140,
+                  background: "var(--navy-800)",
                   color: "#fff",
                   padding: "12px",
                 }}
               >
-                📊 結果を見る
+                結果を見る
               </button>
             )}
           </div>
+
+          {/* 未回答でも結果を見たい場合の逃げ道 */}
+          {isLastCat && unansweredCount > 0 && (
+            <p style={{ textAlign: "center", marginTop: 12 }}>
+              <button
+                onClick={finish}
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontSize: 12,
+                  color: "var(--ink-400)",
+                  textDecoration: "underline",
+                }}
+              >
+                未回答のまま結果を見る（未回答は「未対応」として集計されます）
+              </button>
+            </p>
+          )}
         </div>
       )}
 
-      {/* Result */}
+      {/* ---------------- Result ---------------- */}
       {step === "result" && score && (
         <div ref={resultRef}>
           {/* スコアカード */}
@@ -532,58 +765,25 @@ export default function SelfCheck() {
             style={{
               background: score.rank.bg,
               border: `2px solid ${score.rank.border}`,
-              borderRadius: 16,
-              padding: "24px",
+              borderRadius: "var(--radius-card)",
+              padding: "26px 28px",
               marginBottom: 16,
-              boxShadow: "0 2px 20px rgba(0,0,0,.06)",
+              boxShadow: "var(--shadow-card)",
             }}
           >
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 20,
+                gap: 24,
                 flexWrap: "wrap",
               }}
             >
-              <div
-                style={{
-                  width: 90,
-                  height: 90,
-                  borderRadius: "50%",
-                  background: score.rank.color,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                  boxShadow: `0 4px 16px ${score.rank.color}44`,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 28,
-                    fontWeight: 900,
-                    color: "#fff",
-                    lineHeight: 1,
-                  }}
-                >
-                  {score.pct}%
-                </span>
-                <span
-                  style={{
-                    fontSize: 9,
-                    color: "rgba(255,255,255,.8)",
-                    fontWeight: 700,
-                  }}
-                >
-                  充足率
-                </span>
-              </div>
-              <div style={{ flex: 1 }}>
+              <Donut pct={score.pct} color={score.rank.color} />
+              <div style={{ flex: 1, minWidth: 220 }}>
                 <div
                   style={{
-                    fontSize: 11,
+                    fontSize: 12,
                     fontWeight: 700,
                     color: score.rank.color,
                     letterSpacing: "0.08em",
@@ -594,59 +794,64 @@ export default function SelfCheck() {
                 </div>
                 <div
                   style={{
-                    fontSize: 19,
+                    fontSize: 20,
                     fontWeight: 800,
-                    color: "#0f172a",
-                    marginBottom: 4,
+                    color: "var(--ink-900)",
+                    marginBottom: 6,
                   }}
                 >
                   {score.done} / {score.total} 項目 対応済み
                 </div>
-                <div style={{ fontSize: 12, color: "#64748b" }}>
+                <div style={{ fontSize: 13, color: "var(--ink-700)", lineHeight: 1.7 }}>
                   未対応・不明のうち{" "}
-                  <span style={{ color: score.rank.color, fontWeight: 700 }}>
+                  <strong style={{ color: "var(--teal-700)" }}>
                     {score.supportNeeded.length}項目
-                  </span>{" "}
+                  </strong>{" "}
                   はフロム・シェフでサポート可能です
                 </div>
               </div>
             </div>
           </div>
 
-          {/* フロム・シェフでサポートできる項目 */}
+          {/* サポート可能項目 */}
           {score.supportNeeded.length > 0 && (
             <div
               style={{
-                background: "#fff",
-                borderRadius: 16,
-                padding: "20px 24px",
+                background: "var(--bg-card)",
+                borderRadius: "var(--radius-card)",
+                padding: "22px 26px",
                 marginBottom: 16,
-                boxShadow: "0 2px 14px rgba(0,0,0,.05)",
+                boxShadow: "var(--shadow-card)",
               }}
             >
               <h3
                 style={{
-                  margin: "0 0 4px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  margin: "0 0 6px",
                   fontSize: 15,
                   fontWeight: 700,
-                  color: "#0f172a",
+                  color: "var(--ink-900)",
                 }}
               >
-                🤝 フロム・シェフでサポートできる項目
+                <span style={{ color: "var(--teal-600)", display: "flex" }}>
+                  <IconHandshake size={17} />
+                </span>
+                フロム・シェフでサポートできる項目
               </h3>
-              <p style={{ margin: "0 0 16px", fontSize: 12, color: "#64748b" }}>
-                以下の項目について、フロム・シェフのサービスで対応が可能です。気になる項目からお問い合わせください。
+              <p style={{ margin: "0 0 16px", fontSize: 12.5, color: "var(--ink-500)" }}>
+                以下の項目はフロム・シェフのサービスで対応が可能です。気になる項目からお問い合わせください。
               </p>
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: 10 }}
-              >
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {score.supportNeeded.map((item) => (
                   <div
                     key={item.id}
                     style={{
-                      border: "1px solid #e2e8f0",
-                      borderRadius: 12,
-                      padding: "14px 16px",
+                      border: "1px solid var(--line-200)",
+                      borderLeft: "3px solid var(--teal-600)",
+                      borderRadius: 10,
+                      padding: "14px 18px",
                       display: "flex",
                       alignItems: "center",
                       gap: 12,
@@ -656,8 +861,8 @@ export default function SelfCheck() {
                     <div style={{ flex: 1, minWidth: 200 }}>
                       <div
                         style={{
-                          fontSize: 10,
-                          color: item.catColor,
+                          fontSize: 11,
+                          color: "var(--ink-400)",
                           fontWeight: 700,
                           marginBottom: 3,
                         }}
@@ -666,13 +871,17 @@ export default function SelfCheck() {
                       </div>
                       <p
                         style={{
-                          margin: 0,
-                          fontSize: 13,
-                          color: "#334155",
-                          lineHeight: 1.5,
+                          margin: "0 0 2px",
+                          fontSize: 13.5,
+                          color: "var(--ink-900)",
+                          fontWeight: 600,
+                          lineHeight: 1.6,
                         }}
                       >
                         {item.text}
+                      </p>
+                      <p style={{ margin: 0, fontSize: 12, color: "var(--teal-700)", fontWeight: 600 }}>
+                        {item.supportLabel}
                       </p>
                     </div>
                     <a
@@ -681,15 +890,19 @@ export default function SelfCheck() {
                       )}`}
                       style={{
                         ...btnBase,
-                        background: "#1A3A5C",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        background: "var(--teal-600)",
                         color: "#fff",
-                        fontSize: 12,
+                        fontSize: 12.5,
                         textDecoration: "none",
                         whiteSpace: "nowrap",
                         flexShrink: 0,
                       }}
                     >
-                      📩 {item.supportLabel}を相談する
+                      <IconMail size={13} />
+                      相談する
                     </a>
                   </div>
                 ))}
@@ -700,30 +913,31 @@ export default function SelfCheck() {
           {/* カテゴリ別スコア */}
           <div
             style={{
-              background: "#fff",
-              borderRadius: 16,
-              padding: "20px 24px",
+              background: "var(--bg-card)",
+              borderRadius: "var(--radius-card)",
+              padding: "22px 26px",
               marginBottom: 16,
-              boxShadow: "0 2px 14px rgba(0,0,0,.05)",
+              boxShadow: "var(--shadow-card)",
             }}
           >
             <h3
               style={{
-                margin: "0 0 14px",
+                margin: "0 0 16px",
                 fontSize: 15,
                 fontWeight: 700,
-                color: "#0f172a",
+                color: "var(--ink-900)",
               }}
             >
-              📊 カテゴリ別 充足状況
+              カテゴリ別 充足状況
             </h3>
             {CATEGORIES.map((cat) => {
               const catDone = cat.items.filter(
                 (i) => answers[i.id] === "yes"
               ).length;
               const catPct = Math.round((catDone / cat.items.length) * 100);
+              const CatIcon = CATEGORY_ICONS[cat.id];
               return (
-                <div key={cat.id} style={{ marginBottom: 12 }}>
+                <div key={cat.id} style={{ marginBottom: 13 }}>
                   <div
                     style={{
                       display: "flex",
@@ -733,18 +947,22 @@ export default function SelfCheck() {
                   >
                     <span
                       style={{
-                        fontSize: 12,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        fontSize: 13,
                         fontWeight: 600,
-                        color: cat.color,
+                        color: "var(--navy-800)",
                       }}
                     >
-                      {cat.icon} {cat.label}
+                      <CatIcon size={13} />
+                      {cat.label}
                     </span>
                     <span
                       style={{
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: 700,
-                        color: cat.color,
+                        color: "var(--navy-800)",
                       }}
                     >
                       {catDone}/{cat.items.length}
@@ -753,7 +971,7 @@ export default function SelfCheck() {
                   <div
                     style={{
                       height: 8,
-                      background: "#e2e8f0",
+                      background: "var(--line-200)",
                       borderRadius: 4,
                       overflow: "hidden",
                     }}
@@ -762,7 +980,7 @@ export default function SelfCheck() {
                       style={{
                         width: `${catPct}%`,
                         height: "100%",
-                        background: cat.color,
+                        background: "var(--navy-700)",
                         borderRadius: 4,
                         transition: "width 1s ease",
                       }}
@@ -773,7 +991,8 @@ export default function SelfCheck() {
             })}
           </div>
 
-          <div style={{ display: "flex", gap: 10 }}>
+          {/* 操作ボタン */}
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <button
               onClick={() => {
                 setStep("intro");
@@ -783,25 +1002,48 @@ export default function SelfCheck() {
               style={{
                 ...btnBase,
                 flex: 1,
+                minWidth: 160,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 7,
                 background: "#fff",
-                color: "#1A3A5C",
-                border: "2px solid #1A3A5C",
+                color: "var(--navy-800)",
+                border: "2px solid var(--navy-800)",
               }}
             >
-              ← 最初からやり直す
+              <IconRefresh size={14} />
+              最初からやり直す
             </button>
             <button
               onClick={() => window.print()}
               style={{
                 ...btnBase,
                 flex: 1,
-                background: "#1A3A5C",
+                minWidth: 160,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 7,
+                background: "var(--navy-800)",
                 color: "#fff",
               }}
             >
-              🖨️ 結果を印刷 / PDF保存
+              <IconPrinter size={14} />
+              結果を印刷 / PDF保存
             </button>
           </div>
+
+          <p
+            style={{
+              textAlign: "center",
+              fontSize: 11,
+              color: "var(--ink-400)",
+              marginTop: 20,
+            }}
+          >
+            ※ 本チェックは参考情報です。最終的な認定可否は経済産業省・日本健康会議の審査によります。
+          </p>
         </div>
       )}
     </div>

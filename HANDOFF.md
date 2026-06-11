@@ -5,6 +5,60 @@
 
 ---
 
+## 🆕 0. 最新ステータス (2026-06-15 更新)
+
+### いま、ここまで進んでいます
+
+- ✅ Vercel 本番公開済み: https://kenkokeiei-check.vercel.app/
+- ✅ CONTACT_URL は実メール（k.aoi@fromsheff-howsports.co.jp）に変更済み
+- ✅ index.html に OGP メタタグ設定済み（public/ogp.svg あり）
+- ✅ **デザイン全面刷新が完了（Claude Code実施・未コミット）** ← 重要、下記参照
+- ✅ Cloudflare Pages 移行用のファイル変更を実施（`public/_redirects` / OGP / README / HANDOFF 更新）
+- ⏸️ Cloudflare Pages の本番公開は **未実施**（`MIGRATION_TO_CLOUDFLARE.md` 参照）
+- ⏸️ プレスリリース（PR TIMES）を近日発出予定
+
+### ⚠️ 未コミットのデザイン刷新（2026-06-15・Claude Code実施）
+
+ワーキングツリーに大規模なデザイン改修が**未コミット状態**で入っています。
+**これは意図した変更です。絶対に破棄・revertしないでください。**
+
+変更内容（機能・データの意味は一切変えていない）:
+
+- `src/index.css` — CSS変数によるデザイントークン（紺＋ティール＋グレー階調）
+- `src/components/icons.jsx` — **新規**。絵文字を置き換えた線画SVGアイコン集
+- `src/components/Header.jsx` — 運営者表記追加・アンダーライン式タブ
+- `src/components/Footer.jsx` — 会社情報の段を追加（CONTACT_URLは実メールのまま維持）
+- `src/components/CaseSearch.jsx` — 業種大分類フィルタ・選択中条件チップ・「⑰1」表示バグ修正・カードCTAを1個に整理
+- `src/components/SelfCheck.jsx` — 必須バッジ2種分離・ドーナツグラフ・未回答ジャンプ
+- `src/data/cases.js` — 末尾に業種大分類マップを**追記**（既存27社データは無変更）
+- `src/App.jsx` — URLハッシュ連動のタブ切替（#cases / #check）
+
+`npm run build` 成功・PC/モバイル表示確認済み。
+**次の作業**: ユーザー確認 → GitHub Desktopでコミット&push → Cloudflare Pages を GitHub 連携で作成 → 実URL確定後に OGP URL を差し替え。
+
+### デザイン刷新後のルール（重要）
+
+- 色は CSS変数（`src/index.css` の `--navy-*` / `--teal-*` / `--ink-*` 等)を使う。直接カラーコードを書かない
+- アイコンは `src/components/icons.jsx` から import。**絵文字をUIに使わない**
+- ティール（teal）は「フロム・シェフ対応可」とCTA専用のアクセント色
+- `categories.js` の `color` / `icon`（絵文字）フィールドはデータとして残っているが**UIでは未使用**。削除も使用再開もしない
+- 業種の絞り込みは `cases.js` 末尾の `INDUSTRY_CATEGORY_BY_CASE`（大分類）を使用。事例を追加したらこのマップにも必ず追加する
+
+### 並行進行中: プレスリリース
+
+- 既存案ファイル: `~/Desktop/フロム・シェフ資料/10_【各法人別資料】/260606_PR TIMES プレスリリース案.docx`
+- Claude側で編集案を提案済み（タイトル・新セクション・今後について）
+- 掲載URL: 現在は https://kenkokeiei-check.vercel.app/ （Cloudflare Pages 公開後に差し替え）
+
+### Codex Desktop 利用時の注意
+
+- ChatGPT アカウント版の Codex Desktop では **`gpt-5.4` モデルは利用不可**
+  - エラー: `The 'gpt-5.4' model is not supported when using Codex with a ChatGPT account.`
+  - **対処**: 画面右下のモデル選択を「中（Medium）」など別のものに切り替えてから再送信
+- 利用環境: macOS, Node v24, npm 11
+
+---
+
 ## 1. プロジェクト概要
 
 | 項目 | 内容 |
@@ -14,7 +68,7 @@
 | 想定運営 | 株式会社フロム・シェフ |
 | 利用者 | 認定取得を目指す企業の担当者 |
 | 機能 | (1) 認定企業の取り組み事例検索 (2) 自社のセルフチェック |
-| ホスティング | Vercel（設定済・未デプロイ） |
+| ホスティング | Cloudflare Pages（移行準備中） / 現公開URLは Vercel: https://kenkokeiei-check.vercel.app/ |
 | リポジトリ | https://github.com/kazumajan25-eng/kenkokeiei-check |
 
 ---
@@ -38,12 +92,15 @@ kenkokeiei-check/
 ├── README.md
 ├── package.json
 ├── vite.config.js
-├── vercel.json             # Vercel設定（SPA向けrewrite含む）
-├── index.html              # title・description設定済み
+├── MIGRATION_TO_CLOUDFLARE.md  # Cloudflare Pages移行手順
+├── index.html              # title・description・OGP設定
+├── public/
+│   ├── _redirects          # Cloudflare Pages向けSPAリダイレクト
+│   └── ogp.svg             # OGP仮画像
 └── src/
-    ├── App.jsx             # タブ切替の親コンポーネント
+    ├── App.jsx             # タブ切替の親コンポーネント（URLハッシュ連動）
     ├── main.jsx
-    ├── index.css           # 最小限のリセットのみ
+    ├── index.css           # デザイントークンと全体スタイル
     ├── data/
     │   ├── categories.js   # 公式評価項目データ（29項目）
     │   └── cases.js        # 認定企業の取り組み事例（27社）
@@ -51,7 +108,8 @@ kenkokeiei-check/
         ├── Header.jsx      # 共通ヘッダー（タブ切替）
         ├── Footer.jsx      # 共通フッター（CTA）
         ├── SelfCheck.jsx   # セルフチェック画面
-        └── CaseSearch.jsx  # 事例検索画面
+        ├── CaseSearch.jsx  # 事例検索画面
+        └── icons.jsx       # SVGアイコン
 ```
 
 ---
@@ -90,14 +148,16 @@ kenkokeiei-check/
 - 各事例には必ず `sourceUrl` と `sourceName` を含めること（著作権・出典明示のため）
 
 ### 4-4. スタイル方針
-- インラインstyleで統一（CSS Modulesやstyled-componentsへの移行はユーザー要望時のみ）
-- 配色は categories.js の `color` プロパティを各カテゴリで使用
-- 日本語フォント: `Hiragino Kaku Gothic ProN`, `Meiryo` (App.jsx で指定)
+- 基本はインラインstyleで統一（CSS Modulesやstyled-componentsへの移行はユーザー要望時のみ）
+- 色は `src/index.css` の CSS変数（`--navy-*` / `--teal-*` / `--ink-*` 等）を使う
+- UIのアイコンは `src/components/icons.jsx` のSVGアイコンを使い、絵文字は使わない
+- ティールは「フロム・シェフ対応可」と CTA のアクセント用に限定
+- 日本語フォント: `Hiragino Kaku Gothic ProN`, `Meiryo`
 
-### 4-5. CONTACT_URL は仮値
-- 現状: `mailto:info@example.com`
-- 場所: `src/components/Footer.jsx` で定義、SelfCheck/CaseSearchが import
-- **本番公開前に実際の問い合わせ先メールに変更必須**
+### 4-5. CONTACT_URL は本番値
+- 現状: `mailto:k.aoi@fromsheff-howsports.co.jp`
+- 場所: `src/components/Footer.jsx` で定義し、SelfCheck / CaseSearch が import
+- **ユーザー確認なしに変更しないこと**
 
 ---
 
@@ -146,8 +206,12 @@ kenkokeiei-check/
 - [x] 共通フッターCTA
 - [x] フロム・シェフ対応可項目を12項目に整理
 - [x] 健康白書の作成・公開（4-2）を独自項目として追加
-- [x] vercel.json（SPA rewrite）
 - [x] GitHub リポジトリ作成・push（初回コミット）
+- [x] Vercel 本番公開
+- [x] CONTACT_URL を実運用メールに変更
+- [x] OGPメタタグと `public/ogp.svg` を追加
+- [x] デザイン全面刷新（未コミット差分）
+- [x] Cloudflare Pages 移行用のファイル変更
 
 ---
 
@@ -155,12 +219,12 @@ kenkokeiei-check/
 
 ### 🔴 短期（Phase 1完成までに）
 
-- [ ] **CONTACT_URL を実運用のメールアドレスに変更** （Footer.jsx）
-- [ ] **Vercel本番デプロイ** （GitHub連携 or CLI）
+- [ ] **デザイン刷新 + Cloudflare移行準備の差分をコミット & push**
+- [ ] **Cloudflare Pages 本番デプロイ** （GitHub連携）
+- [ ] **Cloudflare の実URLを確定し、index.html の OGP URL を差し替え**
 - [ ] サントリー・ANA など取得失敗企業の手動追加（テキストを手で入力）
 - [ ] 花王・ロート製薬の事例データ補完（initiatives が薄い）
 - [ ] モバイル表示の細かい確認・調整
-- [ ] OGP画像（SNSシェア時の見た目）
 - [ ] favicon を適切なものに変更
 
 ### 🟡 中期（Phase 2）
@@ -203,9 +267,11 @@ npm run dev
 # 本番ビルド確認
 npm run build
 
-# Vercel CLI でデプロイ（GitHubから自動デプロイ推奨）
-npx vercel        # プレビュー
-npx vercel --prod # 本番
+# Cloudflare Pages は GitHub 連携で自動デプロイ
+npm run build
+
+# 任意: Cloudflare Pages 相当のローカル確認
+npx wrangler pages dev dist
 ```
 
 ---
@@ -231,10 +297,12 @@ GitHub: https://github.com/kazumajan25-eng/kenkokeiei-check
 2. 事例データ (src/data/cases.js) は各企業の公式サイトを出典としており、
    各事例に sourceUrl と sourceName を必ず含めること（出典明示）
 
-3. CONTACT_URL は仮の値（info@example.com）で本番公開前に要変更
+3. CONTACT_URL は本番の値（k.aoi@fromsheff-howsports.co.jp）が設定済み
+   - ユーザー確認なしに変更しないこと
 
-4. スタイルはインラインstyleで統一されている。CSS Modulesや
-   styled-componentsへの移行はユーザー要望時のみ
+4. デザイン刷新後は src/index.css のCSS変数と
+   src/components/icons.jsx のSVGアイコンを使う
+   - UIで絵文字を使わないこと
 
 5. ユーザーは非エンジニアです。専門用語を避け日本語でわかりやすく
    説明してください。返答も日本語でお願いします。

@@ -1,4 +1,45 @@
-/* 全体の最小リセット（App側でインラインスタイルを使用しているため最低限のみ） */
+/* ============================================================
+   デザイントークン（案B: ウェルネス・コンサル路線）
+   - 紺: ブランドの主役（フロム・シェフ社サイトのダークネイビーに合わせる）
+   - ティール: アクセント1色のみ（健康・サポート可の表現に使用）
+   - グレー階調: 本文・罫線・背景
+   ============================================================ */
+:root {
+  /* 紺（ブランド主色） */
+  --navy-900: #122740;
+  --navy-800: #1a3a5c;
+  --navy-700: #24507c;
+
+  /* ティール（アクセント: フロム・シェフ対応可・CTA） */
+  --teal-700: #0b7263;
+  --teal-600: #0e8c7a;
+  --teal-300: #45d0be;
+  --teal-50: #e9f7f4;
+
+  /* 文字・罫線・背景 */
+  --ink-900: #0f172a;
+  --ink-700: #334155;
+  --ink-500: #64748b;
+  --ink-400: #94a3b8;
+  --line-200: #e2e8f0;
+  --line-100: #f1f5f9;
+  --bg-page: #f5f7fa;
+  --bg-card: #ffffff;
+
+  /* 意味色（必須バッジ・判定にのみ使用） */
+  --red-600: #dc2626;
+  --red-50: #fef2f2;
+  --amber-700: #b45309;
+  --amber-50: #fff7e8;
+  --green-600: #16a34a;
+  --green-50: #f0fdf4;
+
+  /* 影・角丸 */
+  --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 16px rgba(15, 23, 42, 0.05);
+  --radius-card: 14px;
+  --radius-btn: 9px;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -12,6 +53,41 @@ body,
 }
 
 body {
+  font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Meiryo", sans-serif;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--ink-900);
+  background: var(--bg-page);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--teal-600);
+  outline-offset: 2px;
+}
+
+/* 未回答項目へジャンプした時のハイライト */
+@keyframes flash-bg {
+  0% {
+    background-color: var(--teal-50);
+    box-shadow: 0 0 0 2px var(--teal-300);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
+
+.flash {
+  animation: flash-bg 1.6s ease-out;
 }

@@ -1,7 +1,9 @@
 // ============================================================
 // App.jsx - タブ切替の親コンポーネント
 // ============================================================
-// [🔍 事例を探す] [✅ セルフチェック] の2タブ構成
+// [事例を探す] [セルフチェック] の2タブ構成
+// URLハッシュ（#cases / #check）と連動し、ブラウザの戻る/進むでも
+// タブを行き来できる
 // ============================================================
 
 import { useState, useEffect } from "react";
@@ -10,21 +12,36 @@ import Footer from "./components/Footer.jsx";
 import CaseSearch from "./components/CaseSearch.jsx";
 import SelfCheck from "./components/SelfCheck.jsx";
 
-export default function App() {
-  // 起動時のタブ: "cases" (事例検索) | "selfcheck" (セルフチェック)
-  const [activeTab, setActiveTab] = useState("cases");
+const TAB_HASH = { cases: "#cases", selfcheck: "#check" };
 
-  // タブ切替時に画面トップへスクロール
+function tabFromHash() {
+  return window.location.hash === "#check" ? "selfcheck" : "cases";
+}
+
+export default function App() {
+  const [activeTab, setActiveTabState] = useState(tabFromHash);
+
+  // URLハッシュの変化（戻る/進むを含む）でタブを切り替える
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const onHashChange = () => setActiveTabState(tabFromHash());
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+
+  // タブ切替時に画面トップへ
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
   }, [activeTab]);
+
+  const setActiveTab = (tab) => {
+    if (tab === activeTab) return;
+    window.location.hash = TAB_HASH[tab]; // hashchangeイベント経由でstateが更新される
+  };
 
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "#F8FAFC",
-        fontFamily: "'Hiragino Kaku Gothic ProN','Meiryo',sans-serif",
         display: "flex",
         flexDirection: "column",
       }}
