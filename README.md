@@ -7,7 +7,7 @@
 
 - React 19
 - Vite 8
-- デプロイ先: Cloudflare Pages（移行準備中）
+- デプロイ先: Cloudflare Pages（公開済み: https://kenkokeiei-check.pages.dev/）
 
 ## ローカルでの動かし方
 

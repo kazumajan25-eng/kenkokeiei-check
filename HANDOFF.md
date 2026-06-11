@@ -9,18 +9,19 @@
 
 ### いま、ここまで進んでいます
 
-- ✅ Vercel 本番公開済み: https://kenkokeiei-check.vercel.app/
+- ✅ Cloudflare Pages 本番公開済み: https://kenkokeiei-check.pages.dev/
+- ✅ 旧Vercel公開URL: https://kenkokeiei-check.vercel.app/
 - ✅ CONTACT_URL は実メール（k.aoi@fromsheff-howsports.co.jp）に変更済み
 - ✅ index.html に OGP メタタグ設定済み（public/ogp.svg あり）
-- ✅ **デザイン全面刷新が完了（Claude Code実施・未コミット）** ← 重要、下記参照
+- ✅ **デザイン全面刷新が完了（Claude Code実施・コミット済み）**
 - ✅ Cloudflare Pages 移行用のファイル変更を実施（`public/_redirects` / OGP / README / HANDOFF 更新）
-- ⏸️ Cloudflare Pages の本番公開は **未実施**（`MIGRATION_TO_CLOUDFLARE.md` 参照）
+- ✅ Cloudflare Pages の実URLが確定（仮設定の OGP URL と一致）
 - ⏸️ プレスリリース（PR TIMES）を近日発出予定
 
-### ⚠️ 未コミットのデザイン刷新（2026-06-15・Claude Code実施）
+### ✅ デザイン刷新の反映内容（2026-06-15・Claude Code実施）
 
-ワーキングツリーに大規模なデザイン改修が**未コミット状態**で入っています。
-**これは意図した変更です。絶対に破棄・revertしないでください。**
+デザイン改修は **GitHub に commit / push 済み** です。
+今後この周辺を触るときは、以下の変更を前提として作業してください。
 
 変更内容（機能・データの意味は一切変えていない）:
 
@@ -34,7 +35,7 @@
 - `src/App.jsx` — URLハッシュ連動のタブ切替（#cases / #check）
 
 `npm run build` 成功・PC/モバイル表示確認済み。
-**次の作業**: ユーザー確認 → GitHub Desktopでコミット&push → Cloudflare Pages を GitHub 連携で作成 → 実URL確定後に OGP URL を差し替え。
+**次の作業**: Cloudflare 公開後の最終表示確認 → プレスリリースへ公開URL差し込み → 必要なら独自ドメイン設定。
 
 ### デザイン刷新後のルール（重要）
 
@@ -48,7 +49,7 @@
 
 - 既存案ファイル: `~/Desktop/フロム・シェフ資料/10_【各法人別資料】/260606_PR TIMES プレスリリース案.docx`
 - Claude側で編集案を提案済み（タイトル・新セクション・今後について）
-- 掲載URL: 現在は https://kenkokeiei-check.vercel.app/ （Cloudflare Pages 公開後に差し替え）
+- 掲載URL: https://kenkokeiei-check.pages.dev/
 
 ### Codex Desktop 利用時の注意
 
@@ -68,7 +69,7 @@
 | 想定運営 | 株式会社フロム・シェフ |
 | 利用者 | 認定取得を目指す企業の担当者 |
 | 機能 | (1) 認定企業の取り組み事例検索 (2) 自社のセルフチェック |
-| ホスティング | Cloudflare Pages（移行準備中） / 現公開URLは Vercel: https://kenkokeiei-check.vercel.app/ |
+| ホスティング | Cloudflare Pages（公開済: https://kenkokeiei-check.pages.dev/ ） |
 | リポジトリ | https://github.com/kazumajan25-eng/kenkokeiei-check |
 
 ---
@@ -210,8 +211,9 @@ kenkokeiei-check/
 - [x] Vercel 本番公開
 - [x] CONTACT_URL を実運用メールに変更
 - [x] OGPメタタグと `public/ogp.svg` を追加
-- [x] デザイン全面刷新（未コミット差分）
+- [x] デザイン全面刷新（コミット・push済み）
 - [x] Cloudflare Pages 移行用のファイル変更
+- [x] Cloudflare Pages 本番公開
 
 ---
 
@@ -219,9 +221,8 @@ kenkokeiei-check/
 
 ### 🔴 短期（Phase 1完成までに）
 
-- [ ] **デザイン刷新 + Cloudflare移行準備の差分をコミット & push**
-- [ ] **Cloudflare Pages 本番デプロイ** （GitHub連携）
-- [ ] **Cloudflare の実URLを確定し、index.html の OGP URL を差し替え**
+- [x] デザイン刷新 + Cloudflare移行準備の差分をコミット & push
+- [ ] Cloudflare Pages 公開後の実機表示確認
 - [ ] サントリー・ANA など取得失敗企業の手動追加（テキストを手で入力）
 - [ ] 花王・ロート製薬の事例データ補完（initiatives が薄い）
 - [ ] モバイル表示の細かい確認・調整
