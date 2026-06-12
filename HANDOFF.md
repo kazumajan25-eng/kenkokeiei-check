@@ -9,7 +9,8 @@
 
 ### いま、ここまで進んでいます
 
-- ✅ Cloudflare Pages 本番公開済み: https://kenkokeiei-check.pages.dev/
+- ✅ Cloudflare Pages 本番公開済み: https://kenkokeiei-check.com/
+- ✅ Cloudflare Pages 既定URL: https://kenkokeiei-check.pages.dev/
 - ✅ 旧Vercel公開URL: https://kenkokeiei-check.vercel.app/
 - ✅ CONTACT_URL は実メール（k.aoi@fromsheff-howsports.co.jp）に変更済み
 - ✅ index.html に OGP メタタグ設定済み（public/ogp.svg あり）
@@ -49,7 +50,7 @@
 
 - 既存案ファイル: `~/Desktop/フロム・シェフ資料/10_【各法人別資料】/260606_PR TIMES プレスリリース案.docx`
 - Claude側で編集案を提案済み（タイトル・新セクション・今後について）
-- 掲載URL: https://kenkokeiei-check.pages.dev/
+- 掲載URL: https://kenkokeiei-check.com/
 
 ### Codex Desktop 利用時の注意
 
@@ -69,7 +70,7 @@
 | 想定運営 | 株式会社フロム・シェフ |
 | 利用者 | 認定取得を目指す企業の担当者 |
 | 機能 | (1) 認定企業の取り組み事例検索 (2) 自社のセルフチェック |
-| ホスティング | Cloudflare Pages（公開済: https://kenkokeiei-check.pages.dev/ ） |
+| ホスティング | Cloudflare Pages（公開済: https://kenkokeiei-check.com/ ） |
 | リポジトリ | https://github.com/kazumajan25-eng/kenkokeiei-check |
 
 ---

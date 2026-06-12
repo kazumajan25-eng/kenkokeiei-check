@@ -4,7 +4,22 @@
 
 import { IconMail, IconExternalLink } from "./icons.jsx";
 
-const CONTACT_URL = "mailto:k.aoi@fromsheff-howsports.co.jp";
+const CONTACT_FORM_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLSfAbiVb5Xv37mAM3YM5YbH9sxZOX8UfdiwI-dHsG1vAFpR9mQ/viewform";
+// Googleフォーム「気になった項目・事例」の事前入力欄
+const CONTACT_PREFILL_FIELD = "entry.86723895";
+
+function buildContactUrl(prefillText = "") {
+  if (!prefillText) {
+    return CONTACT_FORM_URL;
+  }
+
+  return `${CONTACT_FORM_URL}?usp=pp_url&${CONTACT_PREFILL_FIELD}=${encodeURIComponent(
+    prefillText
+  )}`;
+}
+
+const CONTACT_URL = buildContactUrl();
 
 export default function Footer() {
   return (
@@ -37,6 +52,8 @@ export default function Footer() {
           </p>
           <a
             href={CONTACT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -102,6 +119,8 @@ export default function Footer() {
             </div>
             <a
               href={CONTACT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -136,4 +155,4 @@ export default function Footer() {
   );
 }
 
-export { CONTACT_URL };
+export { CONTACT_URL, buildContactUrl };

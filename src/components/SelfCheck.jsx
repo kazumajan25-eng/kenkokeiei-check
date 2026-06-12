@@ -9,7 +9,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { CATEGORIES } from "../data/categories.js";
-import { CONTACT_URL } from "./Footer.jsx";
+import { buildContactUrl } from "./Footer.jsx";
 import {
   IconCheck,
   IconX,
@@ -885,9 +885,9 @@ export default function SelfCheck() {
                       </p>
                     </div>
                     <a
-                      href={`${CONTACT_URL}?subject=${encodeURIComponent(
-                        `【${item.supportLabel}】のお問い合わせ`
-                      )}`}
+                      href={buildContactUrl(`項目: ${item.id} ${item.text}`)}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       style={{
                         ...btnBase,
                         display: "inline-flex",

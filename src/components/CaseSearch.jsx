@@ -19,7 +19,7 @@ import {
   INDUSTRY_CATEGORIES,
   getIndustryCategory,
 } from "../data/cases.js";
-import { CONTACT_URL } from "./Footer.jsx";
+import { buildContactUrl } from "./Footer.jsx";
 import {
   IconSearch,
   IconX,
@@ -146,7 +146,8 @@ export default function CaseSearch() {
             fontSize: 14,
             color: "var(--ink-700)",
             lineHeight: 1.9,
-            maxWidth: 720,
+            maxWidth: 780,
+            textWrap: "pretty",
           }}
         >
           健康経営優良法人に認定された企業
@@ -1006,9 +1007,9 @@ function CaseCard({ caseData, expanded, onToggleExpand }) {
             }}
           >
             <a
-              href={`${CONTACT_URL}?subject=${encodeURIComponent(
-                `【事例相談】${caseData.companyName}のような取り組みについて`
-              )}`}
+              href={buildContactUrl(`事例: ${caseData.companyName}`)}
+              target="_blank"
+              rel="noopener noreferrer"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
