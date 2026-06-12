@@ -155,7 +155,9 @@ export default function CaseSearch() {
             {CASES.length}社
           </strong>
           の取り組みを、経済産業省の評価項目（{ALL_ITEMS.length}
-          項目）に沿って整理しています。業種や評価項目で絞り込んで、自社の参考になる事例を見つけてください。
+          項目）に沿って整理しています。
+          <span style={{ whiteSpace: "nowrap" }}>業種や評価項目で絞り込んで、</span>
+          <span style={{ whiteSpace: "nowrap" }}>自社の参考になる事例を見つけてください。</span>
         </p>
         <div
           style={{
