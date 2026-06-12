@@ -2796,6 +2796,158 @@ export const CASES = [
     sourceUrl: "https://chuo-logitech.co.jp/",
     sourceName: "中央ロジテック 公式サイト",
   },
+
+  // --------------------------------------------------------
+  // 78. 小柳建設株式会社
+  // --------------------------------------------------------
+  {
+    id: "case-oyanagi",
+    companyName: "小柳建設株式会社",
+    industry: "総合建設業",
+    employeeScale: "中小規模",
+    certifications: [
+      "ブライト500 2026",
+      "新潟県健康経営表彰 知事賞",
+    ],
+    declaration:
+      "「働く人を楽にしたい」という想いから、DXの推進と働きやすい環境整備を一体で進める。",
+    promotionStructure:
+      "仕事量の平準化と業務の属人化防止に組織的に取り組み、有事の際も業務が滞らない体制を構築。",
+    initiatives: [
+      { itemId: "1-4", summary: "新潟県の健康経営表彰で知事賞を受賞、県の事例として紹介" },
+      { itemId: "3-1", summary: "DX推進（WEB会議等）と働きやすさを重視した社屋の整備" },
+      { itemId: "3-6", summary: "有給休暇・育児休業の取得を推進" },
+      { itemId: "3-14", summary: "仕事量の平準化で長時間労働を防止（月平均残業1.4時間）" },
+    ],
+    kpis: {
+      月平均残業時間: "1.4時間（2023年度）",
+    },
+    sourceUrl: "https://www.pref.niigata.lg.jp/build-niigata/build-niigata-now/oyanagi-k.html",
+    sourceName: "新潟県 にいがた建設産業魅力発信ポータル（小柳建設）",
+  },
+
+  // --------------------------------------------------------
+  // 79. 株式会社スリーハイ
+  // --------------------------------------------------------
+  {
+    id: "case-threehigh",
+    companyName: "株式会社スリーハイ",
+    industry: "産業用ヒーター製造業",
+    employeeScale: "中小規模",
+    certifications: [
+      "ブライト500 2026",
+      "横浜健康経営認証 クラスAAA",
+    ],
+    declaration:
+      "従業員の健康づくりを経営的な視点から捉えて戦略的に実践し、横浜健康経営認証の最上位「クラスAAA」を取得。",
+    promotionStructure:
+      "協会けんぽ神奈川支部の「かながわ健康企業宣言」に参加して推進。",
+    initiatives: [
+      { itemId: "1-1", summary: "かながわ健康企業宣言に参加し健康づくりを宣言" },
+      { itemId: "1-4", summary: "横浜健康経営認証クラスAAAを取得し、地域の中小製造業のモデルに" },
+    ],
+    kpis: {},
+    sourceUrl: "https://www.threehigh.co.jp/company/attitude.php",
+    sourceName: "スリーハイ ISO・公的認証",
+  },
+
+  // --------------------------------------------------------
+  // 80. 小原歯車工業株式会社（KHK）
+  // --------------------------------------------------------
+  {
+    id: "case-khk",
+    companyName: "小原歯車工業株式会社（KHK）",
+    industry: "歯車製造業",
+    employeeScale: "中小規模",
+    certifications: [
+      "ブライト500（2024・2025年連続認定）",
+      "健康経営優良法人（7年連続）",
+      "埼玉県健康経営実践事業所",
+    ],
+    declaration:
+      "健康宣言を掲げ、従業員が健康で長く働ける会社づくりを推進。戦略マップと推進体制を整備し健康課題への対応を体系化。",
+    promotionStructure:
+      "健康宣言のもと、戦略マップ・推進体制を整備して健康課題に対応。",
+    initiatives: [
+      { itemId: "1-1", summary: "健康宣言と健康経営戦略マップを公開" },
+      { itemId: "3-2", summary: "人間ドック受診費用を会社負担" },
+      { itemId: "3-6", summary: "年間休日125日の確保・有給休暇の取得促進" },
+      { itemId: "3-13", summary: "社内ジムを完備" },
+      { itemId: "3-14", summary: "長時間労働の抑制" },
+      { itemId: "3-15", summary: "メンタルヘルス対策" },
+      { itemId: "3-18", summary: "受動喫煙対策" },
+    ],
+    kpis: {},
+    sourceUrl: "https://www.khkgears.co.jp/about_khk/kenko/",
+    sourceName: "小原歯車工業 健康経営優良法人",
+  },
+
+  // --------------------------------------------------------
+  // 81. 大塚ウエルネスベンディング株式会社
+  // --------------------------------------------------------
+  {
+    id: "case-otsukawv",
+    companyName: "大塚ウエルネスベンディング株式会社",
+    industry: "自動販売機運営（健康関連飲料・食品）",
+    employeeScale: "中小規模",
+    certifications: ["ブライト500 2026"],
+    declaration:
+      "大塚グループの一員として「製品とセミナーの両輪」で、自社と顧客企業の健康経営をサポート。",
+    promotionStructure:
+      "産業医と連携した健康管理体制。大塚製薬と共同で「食生活改善」「体調管理」「女性の健康」セミナーを展開。",
+    initiatives: [
+      { itemId: "1-4", summary: "自販機とセミナーの両輪で顧客企業の健康経営も支援" },
+      { itemId: "3-2", summary: "人間ドック受診費用補助による受診勧奨" },
+      { itemId: "3-5", summary: "ヘルスリテラシー向上のための社員教育機会を設定" },
+      { itemId: "3-11", summary: "産業医と連携した治療・予備軍への対応" },
+      { itemId: "3-15", summary: "ストレスチェックの実施とフォローアップ" },
+      { itemId: "3-18", summary: "事業所内全面禁煙・社用車全台禁煙" },
+    ],
+    kpis: {},
+    sourceUrl: "https://www.otsuka-wv.co.jp/health.html",
+    sourceName: "大塚ウエルネスベンディング 健康経営",
+  },
+
+  // --------------------------------------------------------
+  // 82. SOMPOワランティ株式会社
+  // --------------------------------------------------------
+  {
+    id: "case-sompowt",
+    companyName: "SOMPOワランティ株式会社",
+    industry: "延長保証サービス業",
+    employeeScale: "中小規模",
+    certifications: [
+      "ブライト500 2026",
+      "ネクストブライト1000（2025）",
+      "健康優良企業 銀の認定証（8年連続）",
+    ],
+    declaration:
+      "健康経営宣言（2017年7月に健康企業宣言を開始）。社員一人ひとりの心身の健康を第一に考え、安心で安全な就業環境の構築を目指す。社員と家族・取引先の心身の健康を企業活動の源泉と位置づける。",
+    promotionStructure:
+      "代表取締役社長が責任者。衛生委員会が周知・推進の中心となり、産業医による研修・面談を実施。",
+    initiatives: [
+      { itemId: "1-1", summary: "健康経営宣言を発信" },
+      { itemId: "2-1", summary: "代表取締役社長が責任者" },
+      { itemId: "2-2", summary: "衛生委員会が推進の中心" },
+      { itemId: "3-2", summary: "定期健康診断受診率100%" },
+      { itemId: "3-3", summary: "二次検診の受検促進・特定保健指導" },
+      { itemId: "3-6", summary: "時差勤務・在宅勤務・有給促進（平均16.1日）、男性育休取得率100%" },
+      { itemId: "3-9", summary: "女性向け健康セミナーの開催" },
+      { itemId: "3-12", summary: "置き型社食を導入（2024年8月）" },
+      { itemId: "3-13", summary: "スポーツジム利用制度（2025年5月開始）" },
+      { itemId: "3-15", summary: "ストレスチェック受検率100%・産業医面談" },
+      { itemId: "3-16", summary: "インフルエンザ予防接種費用を全額負担" },
+    ],
+    kpis: {
+      健康診断受診率: "100%",
+      ストレスチェック受検率: "100%",
+      平均有給休暇取得日数: "16.1日",
+      男性育休取得率: "100%",
+      喫煙率: "20%",
+    },
+    sourceUrl: "https://www.sompo-swt.com/company/kenkoukeiei.html",
+    sourceName: "SOMPOワランティ 健康経営",
+  },
 ];
 
 // ============================================================
@@ -2925,6 +3077,11 @@ export const INDUSTRY_CATEGORY_BY_CASE = {
   "case-hokusho": "製造",
   "case-futabaunyu": "サービス・運輸",
   "case-chuologitech": "サービス・運輸",
+  "case-oyanagi": "建設・設備",
+  "case-threehigh": "製造",
+  "case-khk": "製造",
+  "case-otsukawv": "商社・小売",
+  "case-sompowt": "金融・保険",
 };
 
 // 事例の業種大分類を取得（未定義の場合は「その他」）
