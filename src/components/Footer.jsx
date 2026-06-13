@@ -98,7 +98,7 @@ export default function Footer() {
                   marginBottom: 2,
                 }}
               >
-                健康経営優良法人2026 認定サポートサイト
+                健康経営ガイドマップ
               </div>
               <a
                 href="https://fromsheff.jp/"

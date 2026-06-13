@@ -123,53 +123,78 @@ export default function CaseSearch() {
         style={{
           background: "var(--bg-card)",
           borderRadius: "var(--radius-card)",
-          padding: "28px 28px 24px",
+          padding: "28px",
           marginBottom: 16,
           boxShadow: "var(--shadow-card)",
           borderTop: "4px solid var(--navy-800)",
         }}
       >
-        <h2
-          style={{
-            margin: "0 0 8px",
-            fontSize: 22,
-            fontWeight: 800,
-            color: "var(--navy-800)",
-            lineHeight: 1.5,
-          }}
-        >
-          認定企業の取り組み事例を探す
-        </h2>
-        <p
-          style={{
-            margin: "0 0 14px",
-            fontSize: 14,
-            color: "var(--ink-700)",
-            lineHeight: 1.9,
-            maxWidth: 780,
-            textWrap: "pretty",
-          }}
-        >
-          健康経営優良法人に認定された企業
-          <strong style={{ color: "var(--navy-800)" }}>
-            {CASES.length}社
-          </strong>
-          の取り組みを、経済産業省の評価項目（{ALL_ITEMS.length}
-          項目）に沿って整理しています。
-          <span style={{ whiteSpace: "nowrap" }}>業種や評価項目で絞り込んで、</span>
-          <span style={{ whiteSpace: "nowrap" }}>自社の参考になる事例を見つけてください。</span>
-        </p>
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 6,
-            fontSize: 12,
-            color: "var(--ink-500)",
+            gap: 24,
+            flexWrap: "wrap",
           }}
         >
-          <IconInfo size={13} />
-          健康経営銘柄・ホワイト500・ブライト500の認定企業を含みます
+          <div style={{ flex: "1 1 460px", minWidth: 260 }}>
+            <h2
+              style={{
+                margin: "0 0 8px",
+                fontSize: 22,
+                fontWeight: 800,
+                color: "var(--navy-800)",
+                lineHeight: 1.5,
+              }}
+            >
+              健康経営の好事例から学ぶ
+            </h2>
+            <p
+              style={{
+                margin: "0 0 14px",
+                fontSize: 14,
+                color: "var(--ink-700)",
+                lineHeight: 1.9,
+                maxWidth: 660,
+                textWrap: "pretty",
+              }}
+            >
+              健康経営に取り組む企業
+              <strong style={{ color: "var(--navy-800)" }}>
+                {CASES.length}社
+              </strong>
+              の好事例を、経済産業省の評価項目（{ALL_ITEMS.length}
+              項目）に沿って整理しています。業種や評価項目で絞り込んで、自社の参考になる事例を見つけてください。
+            </p>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                fontSize: 12,
+                color: "var(--ink-500)",
+              }}
+            >
+              <IconInfo size={13} />
+              健康経営銘柄・ホワイト500・ブライト500の認定企業を含みます
+            </div>
+          </div>
+          <img
+            src="/health-management-guide-hero.jpg"
+            alt="健康経営の取り組み計画を確認するビジネスチーム"
+            loading="eager"
+            fetchPriority="high"
+            style={{
+              flex: "1 1 320px",
+              minWidth: 260,
+              maxWidth: 430,
+              width: "100%",
+              aspectRatio: "3 / 2",
+              objectFit: "cover",
+              borderRadius: 12,
+              boxShadow: "0 12px 32px rgba(18, 39, 64, 0.14)",
+            }}
+          />
         </div>
       </section>
 

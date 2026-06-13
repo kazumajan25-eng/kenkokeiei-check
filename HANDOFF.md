@@ -12,7 +12,7 @@
 - ✅ Cloudflare Pages 本番公開済み: https://kenkokeiei-check.com/
 - ✅ Cloudflare Pages 既定URL: https://kenkokeiei-check.pages.dev/
 - ✅ 旧Vercel公開URL: https://kenkokeiei-check.vercel.app/
-- ✅ CONTACT_URL は実メール（k.aoi@fromsheff-howsports.co.jp）に変更済み
+- ✅ 問い合わせ導線は Googleフォームに変更済み（フッター等のCTAから新しいタブで開く）
 - ✅ index.html に OGP メタタグ設定済み（public/ogp.svg あり）
 - ✅ **デザイン全面刷新が完了（Claude Code実施・コミット済み）**
 - ✅ Cloudflare Pages 移行用のファイル変更を実施（`public/_redirects` / OGP / README / HANDOFF 更新）
@@ -66,7 +66,7 @@
 | 項目 | 内容 |
 |---|---|
 | 名前 | kenkokeiei-check |
-| 目的 | 健康経営優良法人2026 認定取得サポートサイト |
+| 目的 | 健康経営の好事例検索とセルフチェックができるガイドサイト |
 | 想定運営 | 株式会社フロム・シェフ |
 | 利用者 | 認定取得を目指す企業の担当者 |
 | 機能 | (1) 認定企業の取り組み事例検索 (2) 自社のセルフチェック |
@@ -156,10 +156,11 @@ kenkokeiei-check/
 - ティールは「フロム・シェフ対応可」と CTA のアクセント用に限定
 - 日本語フォント: `Hiragino Kaku Gothic ProN`, `Meiryo`
 
-### 4-5. CONTACT_URL は本番値
-- 現状: `mailto:k.aoi@fromsheff-howsports.co.jp`
-- 場所: `src/components/Footer.jsx` で定義し、SelfCheck / CaseSearch が import
-- **ユーザー確認なしに変更しないこと**
+### 4-5. 問い合わせ導線は本番値
+- 現状: Googleフォーム
+- 場所: `src/components/Footer.jsx` の `CONTACT_FORM_URL` / `buildContactUrl`
+- フッターなど汎用CTAはパラメータなし、事例・セルフチェックCTAは「気になった項目・事例」欄に事前入力する
+- **ユーザー確認なしにフォームURLや事前入力項目を変更しないこと**
 
 ---
 
@@ -283,7 +284,7 @@ npx wrangler pages dev dist
 以下のテキストを引き継ぎ先のAIに最初に渡してください:
 
 ```
-このリポジトリは健康経営優良法人2026の認定サポートサイトです。
+このリポジトリは健康経営の好事例検索とセルフチェックができるガイドサイトです。
 Vite + React (JavaScript) で構築されており、TypeScriptは未使用です。
 
 GitHub: https://github.com/kazumajan25-eng/kenkokeiei-check

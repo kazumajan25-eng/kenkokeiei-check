@@ -5,7 +5,7 @@
 import { IconSearch, IconClipboard, IconExternalLink } from "./icons.jsx";
 
 const TABS = [
-  { id: "cases", label: "事例を探す", Icon: IconSearch },
+  { id: "cases", label: "事例から学ぶ", Icon: IconSearch },
   { id: "selfcheck", label: "セルフチェック", Icon: IconClipboard },
 ];
 
@@ -42,7 +42,7 @@ export default function Header({ activeTab, setActiveTab }) {
               color: "rgba(255,255,255,.55)",
             }}
           >
-            健康経営優良法人2026
+            事例で学ぶ健康経営
           </div>
           <h1
             style={{
@@ -54,8 +54,18 @@ export default function Header({ activeTab, setActiveTab }) {
               lineHeight: 1.4,
             }}
           >
-            認定サポートサイト
+            健康経営ガイドマップ
           </h1>
+          <div
+            style={{
+              marginBottom: 2,
+              fontSize: 11,
+              color: "rgba(255,255,255,.72)",
+              lineHeight: 1.6,
+            }}
+          >
+            好事例を学び、セルフチェックで次の一手を見つける
+          </div>
           <a
             href="https://fromsheff.jp/"
             target="_blank"

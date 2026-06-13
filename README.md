@@ -1,7 +1,7 @@
-# 健康経営優良法人2026 認定サポートサイト
+# 健康経営ガイドマップ
 
-経済産業省の「健康経営優良法人認定制度」の評価項目に基づき、
-認定企業の取り組み事例検索と、自社のセルフチェックができるWebアプリです。
+健康経営に取り組む企業の好事例を学び、
+経済産業省の「健康経営優良法人認定制度」の評価項目に沿って自社のセルフチェックができるWebアプリです。
 
 ## 技術スタック
 
@@ -56,8 +56,8 @@ npm run preview
 
 ## カスタマイズ箇所
 
-問い合わせ先メールは `src/components/Footer.jsx` の以下で管理しています。
+問い合わせフォームは `src/components/Footer.jsx` の以下で管理しています。
 
 ```js
-const CONTACT_URL = "mailto:k.aoi@fromsheff-howsports.co.jp";
+const CONTACT_FORM_URL = "https://docs.google.com/forms/...";
 ```
