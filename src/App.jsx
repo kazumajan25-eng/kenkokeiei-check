@@ -33,8 +33,14 @@ export default function App() {
     window.scrollTo({ top: 0 });
   }, [activeTab]);
 
-  const setActiveTab = (tab) => {
-    if (tab === activeTab) return;
+  const setActiveTab = (tab, options = {}) => {
+    if (tab === activeTab) {
+      if (options.scrollTop) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      return;
+    }
+
     window.location.hash = TAB_HASH[tab]; // hashchangeイベント経由でstateが更新される
   };
 

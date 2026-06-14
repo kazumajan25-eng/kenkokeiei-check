@@ -10,6 +10,8 @@ const TABS = [
 ];
 
 export default function Header({ activeTab, setActiveTab }) {
+  const goHome = () => setActiveTab("cases", { scrollTop: true });
+
   return (
     <div
       style={{
@@ -34,38 +36,53 @@ export default function Header({ activeTab, setActiveTab }) {
       >
         {/* タイトル + 運営者 */}
         <div style={{ paddingBottom: 12 }}>
-          <div
+          <button
+            type="button"
+            onClick={goHome}
+            aria-label="ホームに戻る"
             style={{
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: "0.14em",
-              color: "rgba(255,255,255,.55)",
+              display: "block",
+              padding: 0,
+              margin: 0,
+              background: "transparent",
+              border: "none",
+              textAlign: "left",
+              cursor: "pointer",
             }}
           >
-            事例で学ぶ健康経営
-          </div>
-          <h1
-            style={{
-              margin: "1px 0 2px",
-              fontSize: 18,
-              fontWeight: 800,
-              color: "#fff",
-              letterSpacing: "0.02em",
-              lineHeight: 1.4,
-            }}
-          >
-            健康経営ガイドマップ
-          </h1>
-          <div
-            style={{
-              marginBottom: 2,
-              fontSize: 11,
-              color: "rgba(255,255,255,.72)",
-              lineHeight: 1.6,
-            }}
-          >
-            好事例を学び、セルフチェックで次の一手を見つける
-          </div>
+            <div
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: "0.14em",
+                color: "rgba(255,255,255,.55)",
+              }}
+            >
+              事例で学ぶ健康経営
+            </div>
+            <h1
+              style={{
+                margin: "1px 0 2px",
+                fontSize: 18,
+                fontWeight: 800,
+                color: "#fff",
+                letterSpacing: "0.02em",
+                lineHeight: 1.4,
+              }}
+            >
+              健康経営ガイドマップ
+            </h1>
+            <div
+              style={{
+                marginBottom: 2,
+                fontSize: 11,
+                color: "rgba(255,255,255,.72)",
+                lineHeight: 1.6,
+              }}
+            >
+              好事例を学び、セルフチェックで次の一手を見つける
+            </div>
+          </button>
           <a
             href="https://fromsheff.jp/"
             target="_blank"
