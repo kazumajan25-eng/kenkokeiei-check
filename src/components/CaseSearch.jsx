@@ -20,6 +20,7 @@ import {
   getIndustryCategory,
 } from "../data/cases.js";
 import { buildContactUrl } from "./Footer.jsx";
+import { trackContactClick, trackEvent } from "../utils/analytics.js";
 import {
   IconSearch,
   IconX,
@@ -95,6 +96,23 @@ export default function CaseSearch() {
     setIndustryFilter("all");
     setSupportOnlyFilter(false);
     setSearchText("");
+  };
+
+  const toggleCaseDetail = (caseData) => {
+    const willOpen = expandedCaseId !== caseData.id;
+
+    if (willOpen) {
+      trackEvent("case_detail_open", {
+        case_id: caseData.id,
+        company_name: caseData.companyName,
+        industry_category: getIndustryCategory(caseData),
+        supportable_count: caseData.initiatives.filter((initiative) =>
+          SUPPORTABLE_ITEM_IDS.includes(initiative.itemId)
+        ).length,
+      });
+    }
+
+    setExpandedCaseId(willOpen ? caseData.id : null);
   };
 
   const activeFilterCount =
@@ -602,9 +620,7 @@ export default function CaseSearch() {
               key={c.id}
               caseData={c}
               expanded={expandedCaseId === c.id}
-              onToggleExpand={() =>
-                setExpandedCaseId(expandedCaseId === c.id ? null : c.id)
-              }
+              onToggleExpand={() => toggleCaseDetail(c)}
             />
           ))}
         </div>
@@ -1037,6 +1053,12 @@ function CaseCard({ caseData, expanded, onToggleExpand }) {
               href={buildContactUrl(`事例: ${caseData.companyName}`)}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() =>
+                trackContactClick("case_card", {
+                  case_id: caseData.id,
+                  company_name: caseData.companyName,
+                })
+              }
               style={{
                 display: "inline-flex",
                 alignItems: "center",

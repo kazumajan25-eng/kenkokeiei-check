@@ -3,6 +3,7 @@
 // ============================================================
 
 import { IconMail, IconExternalLink } from "./icons.jsx";
+import { trackContactClick } from "../utils/analytics.js";
 
 const CONTACT_FORM_URL =
   "https://docs.google.com/forms/d/e/1FAIpQLSfAbiVb5Xv37mAM3YM5YbH9sxZOX8UfdiwI-dHsG1vAFpR9mQ/viewform";
@@ -54,6 +55,7 @@ export default function Footer() {
             href={CONTACT_URL}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackContactClick("footer_main_cta")}
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -121,6 +123,7 @@ export default function Footer() {
               href={CONTACT_URL}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackContactClick("footer_contact_link")}
               style={{
                 display: "inline-flex",
                 alignItems: "center",

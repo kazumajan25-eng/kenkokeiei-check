@@ -35,6 +35,16 @@
       content="健康経営に取り組む企業の好事例を学び、セルフチェックで次の一手を見つけるためのガイドサイト。企業27社の取り組みを業種・評価項目で検索できます。"
     />
     <meta name="twitter:image" content="https://kenkokeiei-check.com/ogp.svg" />
+    <!-- Google Analytics 4: ページ表示はReact側で手動送信する -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLM7T710T"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-YNLM7T710T", { send_page_view: false });
+    </script>
   </head>
   <body>
     <div id="root"></div>

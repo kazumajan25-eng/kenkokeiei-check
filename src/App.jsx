@@ -11,6 +11,7 @@ import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
 import CaseSearch from "./components/CaseSearch.jsx";
 import SelfCheck from "./components/SelfCheck.jsx";
+import { trackPageView } from "./utils/analytics.js";
 
 const TAB_HASH = { cases: "#cases", selfcheck: "#check" };
 
@@ -31,6 +32,11 @@ export default function App() {
   // タブ切替時に画面トップへ
   useEffect(() => {
     window.scrollTo({ top: 0 });
+  }, [activeTab]);
+
+  // GA4へタブごとのページ表示を送信する
+  useEffect(() => {
+    trackPageView(activeTab);
   }, [activeTab]);
 
   const setActiveTab = (tab, options = {}) => {

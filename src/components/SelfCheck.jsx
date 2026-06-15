@@ -10,6 +10,7 @@
 import { useState, useRef, useEffect } from "react";
 import { CATEGORIES } from "../data/categories.js";
 import { buildContactUrl } from "./Footer.jsx";
+import { trackContactClick, trackEvent } from "../utils/analytics.js";
 import {
   IconCheck,
   IconX,
@@ -134,7 +135,27 @@ export default function SelfCheck() {
 
   const answer = (id, val) => setAnswers((a) => ({ ...a, [id]: val }));
 
+  const startCheck = () => {
+    trackEvent("self_check_start", {
+      total_items: totalItems,
+    });
+    setStep("check");
+  };
+
   const finish = () => {
+    const nextScore = calcScore(answers);
+    const answered = Object.keys(answers).length;
+
+    trackEvent("self_check_complete", {
+      score_percent: nextScore.pct,
+      completed_items: nextScore.done,
+      total_items: nextScore.total,
+      answered_items: answered,
+      unanswered_items: nextScore.total - answered,
+      support_needed_count: nextScore.supportNeeded.length,
+      result_label: nextScore.rank.label,
+    });
+
     setStep("result");
     setTimeout(
       () => resultRef.current?.scrollIntoView({ behavior: "smooth" }),
@@ -298,7 +319,7 @@ export default function SelfCheck() {
               ))}
             </div>
             <button
-              onClick={() => setStep("check")}
+              onClick={startCheck}
               style={{
                 ...btnBase,
                 width: "100%",
@@ -888,6 +909,12 @@ export default function SelfCheck() {
                       href={buildContactUrl(`項目: ${item.id} ${item.text}`)}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() =>
+                        trackContactClick("self_check_item", {
+                          item_id: item.id,
+                          item_name: item.text,
+                        })
+                      }
                       style={{
                         ...btnBase,
                         display: "inline-flex",

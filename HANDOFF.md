@@ -17,6 +17,7 @@
 - ✅ **デザイン全面刷新が完了（Claude Code実施・コミット済み）**
 - ✅ Cloudflare Pages 移行用のファイル変更を実施（`public/_redirects` / OGP / README / HANDOFF 更新）
 - ✅ Cloudflare Pages の実URLが確定（仮設定の OGP URL と一致）
+- ✅ GA4計測を追加（測定ID: `G-YNLM7T710T`。ページ表示・セルフチェック完了・問い合わせクリック等をイベント送信）
 - ⏸️ プレスリリース（PR TIMES）を近日発出予定
 
 ### ✅ デザイン刷新の反映内容（2026-06-15・Claude Code実施）
