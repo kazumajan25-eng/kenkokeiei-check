@@ -19,6 +19,7 @@
 - ✅ Cloudflare Pages の実URLが確定（仮設定の OGP URL と一致）
 - ✅ GA4計測を追加（測定ID: `G-YNLM7T710T`。ページ表示・セルフチェック完了・問い合わせクリック等をイベント送信）
 - ✅ セルフチェックを大規模法人部門 / 中小規模法人部門で分岐（業種・従業員数で判定）
+- ✅ Google検索登録用に `public/sitemap.xml` / `public/robots.txt` を追加
 - ⏸️ プレスリリース（PR TIMES）を近日発出予定
 
 ### ✅ デザイン刷新の反映内容（2026-06-15・Claude Code実施）
