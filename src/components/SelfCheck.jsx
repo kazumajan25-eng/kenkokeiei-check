@@ -1,14 +1,20 @@
 // ============================================================
 // セルフチェック画面
 // ============================================================
-// - 公式評価項目（29項目）に「はい／いいえ／わからない」で回答
-// - 必須バッジは「必須（大規模法人）」と「銘柄・500必須」を区別
+// - 業種・従業員数から大規模法人部門 / 中小規模法人部門を判定
+// - 部門別の認定要件に沿って「はい／いいえ／わからない」で回答
+// - 必須バッジは「必須」と「銘柄・500必須」を区別
 // - 未回答がある状態で結果に進もうとすると、未回答項目へ案内
 // - 結果画面はドーナツグラフで充足率を表示
 // ============================================================
 
 import { useState, useRef, useEffect } from "react";
-import { CATEGORIES } from "../data/categories.js";
+import {
+  CORPORATION_SIZE_RULES,
+  classifyCorporationSize,
+  getSelfCheckConfig,
+  summarizeRequirementProgress,
+} from "../data/selfCheckCriteria.js";
 import { buildContactUrl } from "./Footer.jsx";
 import { trackContactClick, trackEvent } from "../utils/analytics.js";
 import {
@@ -28,11 +34,11 @@ import {
 } from "./icons.jsx";
 
 // スコア計算
-function calcScore(answers) {
+function calcScore(categories, answers) {
   let total = 0,
     done = 0,
     supportNeeded = [];
-  CATEGORIES.forEach((cat) => {
+  categories.forEach((cat) => {
     cat.items.forEach((item) => {
       total++;
       if (answers[item.id] === "yes") done++;
@@ -67,6 +73,81 @@ function calcScore(answers) {
           border: "#fca5a5",
         };
   return { total, done, pct, rank, supportNeeded };
+}
+
+function itemLabel(item) {
+  return item.displayId || item.id;
+}
+
+function RequirementProgress({ status }) {
+  return (
+    <div
+      style={{
+        background: "var(--bg-card)",
+        borderRadius: "var(--radius-card)",
+        padding: "20px 22px",
+        marginBottom: 16,
+        boxShadow: "var(--shadow-card)",
+      }}
+    >
+      <h3
+        style={{
+          margin: "0 0 12px",
+          fontSize: 15,
+          fontWeight: 800,
+          color: "var(--ink-900)",
+        }}
+      >
+        認定要件の目安
+      </h3>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 10,
+            padding: "10px 12px",
+            borderRadius: 10,
+            background: status.missingRequired.length === 0 ? "var(--green-50)" : "var(--red-50)",
+            color: "var(--ink-900)",
+            fontSize: 13,
+            fontWeight: 700,
+          }}
+        >
+          <span>必須項目</span>
+          <span>
+            {status.requiredDone} / {status.requiredTotal} 項目
+          </span>
+        </div>
+        {status.groups.map((group) => (
+          <div
+            key={group.id}
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 10,
+              padding: "10px 12px",
+              borderRadius: 10,
+              background: group.ok ? "var(--green-50)" : "var(--amber-50)",
+              color: "var(--ink-900)",
+              fontSize: 13,
+              fontWeight: 700,
+            }}
+          >
+            <span>{group.label}</span>
+            <span>
+              {group.done} / {group.total} 項目（必要: {group.min}）
+            </span>
+          </div>
+        ))}
+      </div>
+      {status.missingRequired.length > 0 && (
+        <p style={{ margin: "12px 0 0", fontSize: 12, color: "var(--ink-500)", lineHeight: 1.8 }}>
+          未対応の必須項目があります。まずは必須項目から優先して確認してください。
+        </p>
+      )}
+    </div>
+  );
 }
 
 // 充足率ドーナツグラフ（マウント後にアニメーション）
@@ -119,32 +200,47 @@ function Donut({ pct, color }) {
 
 export default function SelfCheck() {
   const [step, setStep] = useState("intro"); // intro | check | result
+  const [sizeRuleId, setSizeRuleId] = useState("company-manufacturing");
+  const [employeeCount, setEmployeeCount] = useState("");
   const [catIdx, setCatIdx] = useState(0);
   const [answers, setAnswers] = useState({});
   const [flashId, setFlashId] = useState(null);
   const resultRef = useRef(null);
 
-  const allItems = CATEGORIES.flatMap((c) => c.items);
+  const sizeClassification = classifyCorporationSize(sizeRuleId, employeeCount);
+  const selfCheckConfig = getSelfCheckConfig(sizeClassification?.type || "large");
+  const categories = selfCheckConfig.categories;
+  const allItems = categories.flatMap((c) => c.items);
   const answeredCount = Object.keys(answers).length;
   const totalItems = allItems.length;
   const progress = Math.round((answeredCount / totalItems) * 100);
   const unansweredCount = totalItems - answeredCount;
 
-  const currentCat = CATEGORIES[catIdx];
-  const isLastCat = catIdx === CATEGORIES.length - 1;
+  const currentCat = categories[catIdx];
+  const isLastCat = catIdx === categories.length - 1;
+
+  useEffect(() => {
+    setStep("intro");
+    setCatIdx(0);
+    setAnswers({});
+  }, [selfCheckConfig.type]);
 
   const answer = (id, val) => setAnswers((a) => ({ ...a, [id]: val }));
 
   const startCheck = () => {
+    if (!sizeClassification) return;
+
     trackEvent("self_check_start", {
       total_items: totalItems,
+      corporation_size: selfCheckConfig.type,
     });
     setStep("check");
   };
 
   const finish = () => {
-    const nextScore = calcScore(answers);
+    const nextScore = calcScore(categories, answers);
     const answered = Object.keys(answers).length;
+    const requirementStatus = summarizeRequirementProgress(selfCheckConfig, answers);
 
     trackEvent("self_check_complete", {
       score_percent: nextScore.pct,
@@ -154,6 +250,8 @@ export default function SelfCheck() {
       unanswered_items: nextScore.total - answered,
       support_needed_count: nextScore.supportNeeded.length,
       result_label: nextScore.rank.label,
+      corporation_size: selfCheckConfig.type,
+      requirement_ready: requirementStatus.ok,
     });
 
     setStep("result");
@@ -165,8 +263,8 @@ export default function SelfCheck() {
 
   // 最初の未回答項目へジャンプ
   const jumpToFirstUnanswered = () => {
-    for (let i = 0; i < CATEGORIES.length; i++) {
-      const item = CATEGORIES[i].items.find((it) => !answers[it.id]);
+    for (let i = 0; i < categories.length; i++) {
+      const item = categories[i].items.find((it) => !answers[it.id]);
       if (item) {
         setCatIdx(i);
         setFlashId(item.id);
@@ -181,7 +279,9 @@ export default function SelfCheck() {
     }
   };
 
-  const score = step === "result" ? calcScore(answers) : null;
+  const score = step === "result" ? calcScore(categories, answers) : null;
+  const requirementStatus =
+    step === "result" ? summarizeRequirementProgress(selfCheckConfig, answers) : null;
 
   const btnBase = {
     padding: "9px 18px",
@@ -274,9 +374,178 @@ export default function SelfCheck() {
               }}
             >
               経済産業省「健康経営優良法人認定制度」の評価項目に基づき、
-              自社の取り組み状況を約3〜5分でセルフチェックできます。
+              大規模法人部門・中小規模法人部門を分けてセルフチェックできます。
               チェック後、フロム・シェフが支援できる項目を一覧で確認し、そのままお問い合わせいただけます。
             </p>
+            <div
+              style={{
+                background: "var(--line-100)",
+                borderRadius: 14,
+                padding: "18px",
+                marginBottom: 18,
+                border: "1px solid var(--line-200)",
+              }}
+            >
+              <h3
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  margin: "0 0 12px",
+                  fontSize: 15,
+                  color: "var(--navy-800)",
+                }}
+              >
+                <IconInfo size={16} />
+                まず部門を確認
+              </h3>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "minmax(0, 2fr) minmax(120px, 1fr)",
+                  gap: 10,
+                  marginBottom: 12,
+                }}
+              >
+                <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-700)" }}>
+                    業種・法人分類
+                  </span>
+                  <select
+                    value={sizeRuleId}
+                    onChange={(e) => setSizeRuleId(e.target.value)}
+                    style={{
+                      width: "100%",
+                      border: "1.5px solid var(--line-200)",
+                      borderRadius: 9,
+                      padding: "10px 12px",
+                      fontSize: 13,
+                      color: "var(--ink-900)",
+                      background: "#fff",
+                    }}
+                  >
+                    {CORPORATION_SIZE_RULES.map((rule) => (
+                      <option key={rule.id} value={rule.id}>
+                        {rule.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-700)" }}>
+                    従業員数
+                  </span>
+                  <input
+                    type="number"
+                    min="1"
+                    inputMode="numeric"
+                    value={employeeCount}
+                    onChange={(e) => setEmployeeCount(e.target.value)}
+                    placeholder="例: 80"
+                    style={{
+                      width: "100%",
+                      boxSizing: "border-box",
+                      border: "1.5px solid var(--line-200)",
+                      borderRadius: 9,
+                      padding: "10px 12px",
+                      fontSize: 13,
+                      color: "var(--ink-900)",
+                    }}
+                  />
+                </label>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  flexWrap: "wrap",
+                  background: "#fff",
+                  borderRadius: 10,
+                  padding: "12px 14px",
+                  marginBottom: 12,
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: 11, color: "var(--ink-400)", fontWeight: 700 }}>
+                    判定結果
+                  </div>
+                  <div style={{ fontSize: 16, color: "var(--navy-800)", fontWeight: 900 }}>
+                    {sizeClassification ? selfCheckConfig.label : "従業員数を入力してください"}
+                  </div>
+                </div>
+                <div style={{ fontSize: 11, color: "var(--ink-500)", lineHeight: 1.7 }}>
+                  公式認定要件に基づく目安です
+                </div>
+              </div>
+              {sizeClassification && (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr",
+                    gap: 6,
+                    marginBottom: 12,
+                  }}
+                >
+                  {selfCheckConfig.requirementSummary.map((line) => (
+                    <div
+                      key={line}
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: 6,
+                        fontSize: 12,
+                        color: "var(--ink-700)",
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      <span style={{ color: "var(--teal-600)", marginTop: 2 }}>
+                        <IconCheck size={12} />
+                      </span>
+                      {line}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <details>
+                <summary
+                  style={{
+                    cursor: "pointer",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "var(--navy-700)",
+                  }}
+                >
+                  部門区分の目安を見る
+                </summary>
+                <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+                  {CORPORATION_SIZE_RULES.map((rule) => (
+                    <div
+                      key={rule.id}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1.6fr 1fr 1fr",
+                        gap: 8,
+                        padding: "8px 10px",
+                        background: "#fff",
+                        borderRadius: 8,
+                        fontSize: 11,
+                        color: "var(--ink-700)",
+                      }}
+                    >
+                      <strong>{rule.label}</strong>
+                      <span>大規模: {rule.largeLabel}</span>
+                      <span>中小: {rule.smeLabel}</span>
+                    </div>
+                  ))}
+                </div>
+                <p style={{ margin: "8px 0 0", fontSize: 11, color: "var(--ink-400)", lineHeight: 1.7 }}>
+                  ※ 小規模事業者向け特例は、このセルフチェックでは扱いません。
+                  ※ 資本金によって申請部門を選べるケースがありますが、ここでは従業員数の目安で判定します。
+                </p>
+              </details>
+            </div>
             <div
               style={{
                 display: "grid",
@@ -287,7 +556,11 @@ export default function SelfCheck() {
             >
               {[
                 { Icon: IconClock, label: "所要時間", val: "約3〜5分" },
-                { Icon: IconList, label: "チェック項目", val: `${totalItems}項目` },
+                {
+                  Icon: IconList,
+                  label: "チェック項目",
+                  val: sizeClassification ? `${totalItems}項目` : "判定後に表示",
+                },
                 { Icon: IconCheck, label: "料金", val: "無料" },
               ].map(({ Icon, label, val }) => (
                 <div
@@ -320,6 +593,7 @@ export default function SelfCheck() {
             </div>
             <button
               onClick={startCheck}
+              disabled={!sizeClassification}
               style={{
                 ...btnBase,
                 width: "100%",
@@ -329,12 +603,15 @@ export default function SelfCheck() {
                 gap: 8,
                 padding: "15px",
                 fontSize: 15,
-                background: "var(--navy-800)",
-                color: "#fff",
+                background: sizeClassification ? "var(--navy-800)" : "var(--line-200)",
+                color: sizeClassification ? "#fff" : "var(--ink-400)",
                 borderRadius: 10,
+                cursor: sizeClassification ? "pointer" : "not-allowed",
               }}
             >
-              チェックを開始する（無料）
+              {sizeClassification
+                ? `${selfCheckConfig.label}のチェックを開始する（無料）`
+                : "従業員数を入力すると開始できます"}
               <IconArrowRight size={16} />
             </button>
           </div>
@@ -359,7 +636,7 @@ export default function SelfCheck() {
               チェックするカテゴリ
             </h3>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {CATEGORIES.map((cat) => {
+              {categories.map((cat) => {
                 const CatIcon = CATEGORY_ICONS[cat.id];
                 return (
                   <div
@@ -417,7 +694,7 @@ export default function SelfCheck() {
               paddingBottom: 4,
             }}
           >
-            {CATEGORIES.map((cat, i) => {
+            {categories.map((cat, i) => {
               const done = cat.items.every((item) => answers[item.id]);
               const active = catIdx === i;
               const CatIcon = CATEGORY_ICONS[cat.id];
@@ -574,6 +851,22 @@ export default function SelfCheck() {
                         }}
                       >
                         銘柄・500必須
+                      </span>
+                    )}
+                    {item.optionalRecommendation && (
+                      <span
+                        style={{
+                          background: "var(--teal-50)",
+                          color: "var(--teal-700)",
+                          fontSize: 10,
+                          fontWeight: 700,
+                          padding: "2px 8px",
+                          borderRadius: 4,
+                          flexShrink: 0,
+                          marginTop: 3,
+                        }}
+                      >
+                        推奨
                       </span>
                     )}
                     {item.selectableNo && (
@@ -815,6 +1108,16 @@ export default function SelfCheck() {
                 </div>
                 <div
                   style={{
+                    fontSize: 12,
+                    color: "var(--ink-500)",
+                    fontWeight: 700,
+                    marginBottom: 4,
+                  }}
+                >
+                  {selfCheckConfig.label}
+                </div>
+                <div
+                  style={{
                     fontSize: 20,
                     fontWeight: 800,
                     color: "var(--ink-900)",
@@ -833,6 +1136,8 @@ export default function SelfCheck() {
               </div>
             </div>
           </div>
+
+          {requirementStatus && <RequirementProgress status={requirementStatus} />}
 
           {/* サポート可能項目 */}
           {score.supportNeeded.length > 0 && (
@@ -906,13 +1211,14 @@ export default function SelfCheck() {
                       </p>
                     </div>
                     <a
-                      href={buildContactUrl(`項目: ${item.id} ${item.text}`)}
+                      href={buildContactUrl(`項目: ${itemLabel(item)} ${item.text}`)}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() =>
                         trackContactClick("self_check_item", {
-                          item_id: item.id,
+                          item_id: itemLabel(item),
                           item_name: item.text,
+                          corporation_size: selfCheckConfig.type,
                         })
                       }
                       style={{
@@ -957,7 +1263,7 @@ export default function SelfCheck() {
             >
               カテゴリ別 充足状況
             </h3>
-            {CATEGORIES.map((cat) => {
+            {categories.map((cat) => {
               const catDone = cat.items.filter(
                 (i) => answers[i.id] === "yes"
               ).length;

@@ -18,6 +18,7 @@
 - ✅ Cloudflare Pages 移行用のファイル変更を実施（`public/_redirects` / OGP / README / HANDOFF 更新）
 - ✅ Cloudflare Pages の実URLが確定（仮設定の OGP URL と一致）
 - ✅ GA4計測を追加（測定ID: `G-YNLM7T710T`。ページ表示・セルフチェック完了・問い合わせクリック等をイベント送信）
+- ✅ セルフチェックを大規模法人部門 / 中小規模法人部門で分岐（業種・従業員数で判定）
 - ⏸️ プレスリリース（PR TIMES）を近日発出予定
 
 ### ✅ デザイン刷新の反映内容（2026-06-15・Claude Code実施）
@@ -162,6 +163,15 @@ kenkokeiei-check/
 - 場所: `src/components/Footer.jsx` の `CONTACT_FORM_URL` / `buildContactUrl`
 - フッターなど汎用CTAはパラメータなし、事例・セルフチェックCTAは「気になった項目・事例」欄に事前入力する
 - **ユーザー確認なしにフォームURLや事前入力項目を変更しないこと**
+
+### 4-6. セルフチェックは法人規模別に分岐
+- 場所: `src/data/selfCheckCriteria.js`
+- 大規模法人部門: `kk2026sample_dai.pdf` p5 の認定要件を基準
+- 中小規模法人部門: `kk2026sample_chu.pdf` p9 の認定要件を基準
+- 部門区分: `kk2026sample_chu.pdf` p6 の業種・従業員数表を基準
+- 小規模事業者向け特例は、ユーザー指示により本セルフチェックでは扱わない
+- 資本金によって申請部門を選べるケースはあるが、本セルフチェックでは従業員数の目安で判定する
+- `src/data/categories.js` の既存評価項目と `canSupport` 本体は変更しない
 
 ---
 
