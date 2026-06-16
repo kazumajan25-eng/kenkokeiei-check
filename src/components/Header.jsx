@@ -70,7 +70,7 @@ export default function Header({ activeTab, setActiveTab }) {
                 lineHeight: 1.4,
               }}
             >
-              健康経営ガイドマップ
+              健康経営チェック&事例マップ
             </h1>
             <div
               style={{

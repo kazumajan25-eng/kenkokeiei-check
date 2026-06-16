@@ -100,7 +100,7 @@ export default function Footer() {
                   marginBottom: 2,
                 }}
               >
-                健康経営ガイドマップ
+                健康経営チェック&事例マップ
               </div>
               <a
                 href="https://fromsheff.jp/"
