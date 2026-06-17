@@ -11,7 +11,6 @@ export default function Footer({ onOpenContactForm }) {
     if (onOpenContactForm) {
       onOpenContactForm({
         contactSource,
-        sourceLabel: "汎用CTA",
       });
       return;
     }
