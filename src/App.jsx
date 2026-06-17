@@ -11,7 +11,9 @@ import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
 import CaseSearch from "./components/CaseSearch.jsx";
 import SelfCheck from "./components/SelfCheck.jsx";
-import { trackPageView } from "./utils/analytics.js";
+import ContactFormModal from "./components/ContactFormModal.jsx";
+import { buildContactEmbedUrl, buildContactUrl } from "./utils/contact.js";
+import { trackContactClick, trackPageView } from "./utils/analytics.js";
 
 const TAB_HASH = { cases: "#cases", selfcheck: "#check" };
 
@@ -21,6 +23,7 @@ function tabFromHash() {
 
 export default function App() {
   const [activeTab, setActiveTabState] = useState(tabFromHash);
+  const [contactModal, setContactModal] = useState(null);
 
   // URLハッシュの変化（戻る/進むを含む）でタブを切り替える
   useEffect(() => {
@@ -50,6 +53,28 @@ export default function App() {
     window.location.hash = TAB_HASH[tab]; // hashchangeイベント経由でstateが更新される
   };
 
+  const openContactForm = ({
+    prefillText = "",
+    sourceLabel = "",
+    contactSource,
+    trackingParams = {},
+  } = {}) => {
+    if (contactSource) {
+      trackContactClick(contactSource, {
+        ...trackingParams,
+        form_display: "modal",
+      });
+    }
+
+    setContactModal({
+      formUrl: buildContactEmbedUrl(prefillText),
+      fallbackUrl: buildContactUrl(prefillText),
+      sourceLabel,
+    });
+  };
+
+  const closeContactForm = () => setContactModal(null);
+
   return (
     <div
       style={{
@@ -61,11 +86,19 @@ export default function App() {
       <Header activeTab={activeTab} setActiveTab={setActiveTab} />
 
       <main style={{ flex: 1 }}>
-        {activeTab === "cases" && <CaseSearch />}
-        {activeTab === "selfcheck" && <SelfCheck />}
+        {activeTab === "cases" && <CaseSearch onOpenContactForm={openContactForm} />}
+        {activeTab === "selfcheck" && <SelfCheck onOpenContactForm={openContactForm} />}
       </main>
 
-      <Footer />
+      <Footer onOpenContactForm={openContactForm} />
+
+      <ContactFormModal
+        isOpen={Boolean(contactModal)}
+        formUrl={contactModal?.formUrl}
+        fallbackUrl={contactModal?.fallbackUrl}
+        sourceLabel={contactModal?.sourceLabel}
+        onClose={closeContactForm}
+      />
     </div>
   );
 }

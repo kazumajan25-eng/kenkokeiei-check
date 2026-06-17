@@ -4,25 +4,22 @@
 
 import { IconMail, IconExternalLink } from "./icons.jsx";
 import { trackContactClick } from "../utils/analytics.js";
+import { CONTACT_URL, buildContactUrl } from "../utils/contact.js";
 
-const CONTACT_FORM_URL =
-  "https://docs.google.com/forms/d/e/1FAIpQLSfAbiVb5Xv37mAM3YM5YbH9sxZOX8UfdiwI-dHsG1vAFpR9mQ/viewform";
-// Googleフォーム「気になった項目・事例」の事前入力欄
-const CONTACT_PREFILL_FIELD = "entry.86723895";
+export default function Footer({ onOpenContactForm }) {
+  const openContact = (contactSource) => {
+    if (onOpenContactForm) {
+      onOpenContactForm({
+        contactSource,
+        sourceLabel: "汎用CTA",
+      });
+      return;
+    }
 
-function buildContactUrl(prefillText = "") {
-  if (!prefillText) {
-    return CONTACT_FORM_URL;
-  }
+    trackContactClick(contactSource, { form_display: "new_tab_fallback" });
+    window.open(CONTACT_URL, "_blank", "noopener,noreferrer");
+  };
 
-  return `${CONTACT_FORM_URL}?usp=pp_url&${CONTACT_PREFILL_FIELD}=${encodeURIComponent(
-    prefillText
-  )}`;
-}
-
-const CONTACT_URL = buildContactUrl();
-
-export default function Footer() {
   return (
     <footer style={{ marginTop: 48 }}>
       {/* CTAセクション */}
@@ -51,11 +48,9 @@ export default function Footer() {
             <strong style={{ color: "#fff" }}>フロム・シェフ</strong>
             が一気通貫でサポートします。
           </p>
-          <a
-            href={CONTACT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => trackContactClick("footer_main_cta")}
+          <button
+            type="button"
+            onClick={() => openContact("footer_main_cta")}
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -63,16 +58,18 @@ export default function Footer() {
               background: "#fff",
               color: "var(--navy-800)",
               padding: "14px 36px",
+              border: "none",
               borderRadius: "var(--radius-btn)",
               fontSize: 15,
+              fontFamily: "inherit",
               fontWeight: 800,
-              textDecoration: "none",
               boxShadow: "0 4px 14px rgba(0,0,0,.2)",
+              cursor: "pointer",
             }}
           >
             <IconMail size={17} />
             無料相談を申し込む
-          </a>
+          </button>
         </div>
       </div>
 
@@ -119,23 +116,25 @@ export default function Footer() {
                 <IconExternalLink size={10} />
               </a>
             </div>
-            <a
-              href={CONTACT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => trackContactClick("footer_contact_link")}
+            <button
+              type="button"
+              onClick={() => openContact("footer_contact_link")}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 6,
+                padding: 0,
                 fontSize: 12,
+                fontFamily: "inherit",
                 color: "rgba(255,255,255,.65)",
-                textDecoration: "none",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
               }}
             >
               <IconMail size={13} />
               お問い合わせ
-            </a>
+            </button>
           </div>
 
           <p

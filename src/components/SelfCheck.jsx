@@ -15,8 +15,7 @@ import {
   getSelfCheckConfig,
   summarizeRequirementProgress,
 } from "../data/selfCheckCriteria.js";
-import { buildContactUrl } from "./Footer.jsx";
-import { trackContactClick, trackEvent } from "../utils/analytics.js";
+import { trackEvent } from "../utils/analytics.js";
 import {
   IconCheck,
   IconX,
@@ -198,7 +197,7 @@ function Donut({ pct, color }) {
   );
 }
 
-export default function SelfCheck() {
+export default function SelfCheck({ onOpenContactForm }) {
   const [step, setStep] = useState("intro"); // intro | check | result
   const [sizeRuleId, setSizeRuleId] = useState("company-manufacturing");
   const [employeeCount, setEmployeeCount] = useState("");
@@ -1210,17 +1209,21 @@ export default function SelfCheck() {
                         {item.supportLabel}
                       </p>
                     </div>
-                    <a
-                      href={buildContactUrl(`項目: ${itemLabel(item)} ${item.text}`)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() =>
-                        trackContactClick("self_check_item", {
-                          item_id: itemLabel(item),
-                          item_name: item.text,
-                          corporation_size: selfCheckConfig.type,
-                        })
-                      }
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const label = itemLabel(item);
+                        onOpenContactForm?.({
+                          prefillText: `項目: ${label} ${item.text}`,
+                          sourceLabel: `項目: ${label} ${item.text}`,
+                          contactSource: "self_check_item",
+                          trackingParams: {
+                            item_id: label,
+                            item_name: item.text,
+                            corporation_size: selfCheckConfig.type,
+                          },
+                        });
+                      }}
                       style={{
                         ...btnBase,
                         display: "inline-flex",
@@ -1229,14 +1232,15 @@ export default function SelfCheck() {
                         background: "var(--teal-600)",
                         color: "#fff",
                         fontSize: 12.5,
-                        textDecoration: "none",
+                        fontFamily: "inherit",
                         whiteSpace: "nowrap",
                         flexShrink: 0,
+                        cursor: "pointer",
                       }}
                     >
                       <IconMail size={13} />
                       相談する
-                    </a>
+                    </button>
                   </div>
                 ))}
               </div>

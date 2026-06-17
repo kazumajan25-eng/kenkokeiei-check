@@ -52,12 +52,15 @@ npm run preview
 - `src/main.jsx` ... Reactの起動エントリ
 - `src/index.css` ... デザイントークンと全体スタイル
 - `src/components/icons.jsx` ... UIで使うSVGアイコン
+- `src/components/ContactFormModal.jsx` ... サイト内問い合わせフォーム
+- `src/utils/contact.js` ... GoogleフォームURLと事前入力URLの共通管理
 - `public/_redirects` ... Cloudflare Pages 向けのSPAリダイレクト設定
 
 ## カスタマイズ箇所
 
-問い合わせフォームは `src/components/Footer.jsx` の以下で管理しています。
+問い合わせフォームは `src/utils/contact.js` で管理しています。
+事例カード・セルフチェック・フッターのCTAは、サイト内モーダルで同じGoogleフォームを開きます。
 
 ```js
-const CONTACT_FORM_URL = "https://docs.google.com/forms/...";
+const CONTACT_URL = buildContactUrl();
 ```

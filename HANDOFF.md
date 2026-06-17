@@ -12,7 +12,7 @@
 - ✅ Cloudflare Pages 本番公開済み: https://kenkokeiei-check.com/
 - ✅ Cloudflare Pages 既定URL: https://kenkokeiei-check.pages.dev/
 - ✅ 旧Vercel公開URL: https://kenkokeiei-check.vercel.app/
-- ✅ 問い合わせ導線は Googleフォームに変更済み（フッター等のCTAから新しいタブで開く）
+- ✅ 問い合わせ導線は Googleフォームに変更済み（サイト内モーダルで開き、表示できない場合のみ新しいタブで開く）
 - ✅ index.html に OGP メタタグ設定済み（public/ogp.svg あり）
 - ✅ **デザイン全面刷新が完了（Claude Code実施・コミット済み）**
 - ✅ Cloudflare Pages 移行用のファイル変更を実施（`public/_redirects` / OGP / README / HANDOFF 更新）
@@ -35,7 +35,7 @@
 - `src/index.css` — CSS変数によるデザイントークン（紺＋ティール＋グレー階調）
 - `src/components/icons.jsx` — **新規**。絵文字を置き換えた線画SVGアイコン集
 - `src/components/Header.jsx` — 運営者表記追加・アンダーライン式タブ
-- `src/components/Footer.jsx` — 会社情報の段を追加（CONTACT_URLは実メールのまま維持）
+- `src/components/Footer.jsx` — 会社情報の段を追加（問い合わせCTAはサイト内フォームモーダルを開く）
 - `src/components/CaseSearch.jsx` — 業種大分類フィルタ・選択中条件チップ・「⑰1」表示バグ修正・カードCTAを1個に整理
 - `src/components/SelfCheck.jsx` — 必須バッジ2種分離・ドーナツグラフ・未回答ジャンプ
 - `src/data/cases.js` — 末尾に業種大分類マップを**追記**（既存事例データは無変更）
@@ -115,6 +115,7 @@ kenkokeiei-check/
     └── components/
         ├── Header.jsx      # 共通ヘッダー（タブ切替）
         ├── Footer.jsx      # 共通フッター（CTA）
+        ├── ContactFormModal.jsx # サイト内問い合わせフォーム
         ├── SelfCheck.jsx   # セルフチェック画面
         ├── CaseSearch.jsx  # 事例検索画面
         └── icons.jsx       # SVGアイコン
@@ -164,8 +165,10 @@ kenkokeiei-check/
 
 ### 4-5. 問い合わせ導線は本番値
 - 現状: Googleフォーム
-- 場所: `src/components/Footer.jsx` の `CONTACT_FORM_URL` / `buildContactUrl`
+- URL管理: `src/utils/contact.js` の `CONTACT_URL` / `buildContactUrl` / `buildContactEmbedUrl`
+- 表示: `src/components/ContactFormModal.jsx` でGoogleフォームをサイト内に埋め込む
 - フッターなど汎用CTAはパラメータなし、事例・セルフチェックCTAは「気になった項目・事例」欄に事前入力する
+- フォームが表示できない環境向けに、モーダル内に「新しいタブで開く」リンクを残す
 - **ユーザー確認なしにフォームURLや事前入力項目を変更しないこと**
 
 ### 4-6. セルフチェックは法人規模別に分岐
@@ -228,7 +231,8 @@ kenkokeiei-check/
 - [x] 健康白書の作成・公開（4-2）を独自項目として追加
 - [x] GitHub リポジトリ作成・push（初回コミット）
 - [x] Vercel 本番公開
-- [x] CONTACT_URL を実運用メールに変更
+- [x] 問い合わせ導線をGoogleフォームに変更
+- [x] Googleフォームをサイト内モーダルで開く導線を追加
 - [x] OGPメタタグと `public/ogp.svg` を追加
 - [x] デザイン全面刷新（コミット・push済み）
 - [x] Cloudflare Pages 移行用のファイル変更
@@ -317,8 +321,8 @@ GitHub: https://github.com/kazumajan25-eng/kenkokeiei-check
 2. 事例データ (src/data/cases.js) は各企業の公式サイトを出典としており、
    各事例に sourceUrl と sourceName を必ず含めること（出典明示）
 
-3. CONTACT_URL は本番の値（k.aoi@fromsheff-howsports.co.jp）が設定済み
-   - ユーザー確認なしに変更しないこと
+3. 問い合わせフォームURLと事前入力項目IDは `src/utils/contact.js` に設定済み
+   - ユーザー確認なしにフォームURLや事前入力項目IDを変更しないこと
 
 4. デザイン刷新後は src/index.css のCSS変数と
    src/components/icons.jsx のSVGアイコンを使う

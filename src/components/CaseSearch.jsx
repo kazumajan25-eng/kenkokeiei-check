@@ -19,8 +19,7 @@ import {
   INDUSTRY_CATEGORIES,
   getIndustryCategory,
 } from "../data/cases.js";
-import { buildContactUrl } from "./Footer.jsx";
-import { trackContactClick, trackEvent } from "../utils/analytics.js";
+import { trackEvent } from "../utils/analytics.js";
 import {
   IconSearch,
   IconX,
@@ -38,7 +37,7 @@ import {
   circledNumber,
 } from "./icons.jsx";
 
-export default function CaseSearch() {
+export default function CaseSearch({ onOpenContactForm }) {
   const [selectedItemIds, setSelectedItemIds] = useState(new Set());
   const [industryFilter, setIndustryFilter] = useState("all");
   const [supportOnlyFilter, setSupportOnlyFilter] = useState(false);
@@ -621,6 +620,7 @@ export default function CaseSearch() {
               caseData={c}
               expanded={expandedCaseId === c.id}
               onToggleExpand={() => toggleCaseDetail(c)}
+              onOpenContactForm={onOpenContactForm}
             />
           ))}
         </div>
@@ -632,7 +632,7 @@ export default function CaseSearch() {
 // ============================================================
 // 事例カード（個別）
 // ============================================================
-function CaseCard({ caseData, expanded, onToggleExpand }) {
+function CaseCard({ caseData, expanded, onToggleExpand, onOpenContactForm }) {
   const supportableCount = caseData.initiatives.filter((i) =>
     SUPPORTABLE_ITEM_IDS.includes(i.itemId)
   ).length;
@@ -1049,14 +1049,17 @@ function CaseCard({ caseData, expanded, onToggleExpand }) {
               flexWrap: "wrap",
             }}
           >
-            <a
-              href={buildContactUrl(`事例: ${caseData.companyName}`)}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
               onClick={() =>
-                trackContactClick("case_card", {
-                  case_id: caseData.id,
-                  company_name: caseData.companyName,
+                onOpenContactForm?.({
+                  prefillText: `事例: ${caseData.companyName}`,
+                  sourceLabel: `事例: ${caseData.companyName}`,
+                  contactSource: "case_card",
+                  trackingParams: {
+                    case_id: caseData.id,
+                    company_name: caseData.companyName,
+                  },
                 })
               }
               style={{
@@ -1066,15 +1069,17 @@ function CaseCard({ caseData, expanded, onToggleExpand }) {
                 background: "var(--teal-600)",
                 color: "#fff",
                 padding: "11px 20px",
+                border: "none",
                 borderRadius: "var(--radius-btn)",
                 fontSize: 13,
+                fontFamily: "inherit",
                 fontWeight: 700,
-                textDecoration: "none",
+                cursor: "pointer",
               }}
             >
               <IconMail size={14} />
               この事例のような取り組みを相談する
-            </a>
+            </button>
             <a
               href={caseData.sourceUrl}
               target="_blank"
